@@ -12,10 +12,26 @@ import Foundation
 
 protocol MainViewModel {
     
+    func initData()
+    
 }
 
 // MARK: - IMPLEMENTATION
 
 struct MainViewModelImpl: MainViewModel {
+    
+    var apiManager:APIManager?
+    
+    init(_ apiManager:APIManager){
+        
+        self.apiManager = apiManager
+        
+    }
+    
+    func initData() {
+        
+        apiManager?.loadUsers()
+        
+    }
 
 }

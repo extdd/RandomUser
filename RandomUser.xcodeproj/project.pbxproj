@@ -13,6 +13,10 @@
 		B83EC4031E2D696200D2014B /* ViewControllersAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83EC4021E2D696200D2014B /* ViewControllersAssembly.swift */; };
 		B83EC4051E2D696C00D2014B /* ViewModelsAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83EC4041E2D696C00D2014B /* ViewModelsAssembly.swift */; };
 		B83EC4071E2D697D00D2014B /* ManagersAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83EC4061E2D697D00D2014B /* ManagersAssembly.swift */; };
+		B83EC4091E2EA8EC00D2014B /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83EC4081E2EA8EC00D2014B /* NetworkManager.swift */; };
+		B83EC40C1E2EAABC00D2014B /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83EC40B1E2EAABC00D2014B /* Shared.swift */; };
+		B83EC40F1E2EAAF900D2014B /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83EC40E1E2EAAF900D2014B /* APIManager.swift */; };
+		B83EC4111E2EAB1700D2014B /* APIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83EC4101E2EAB1700D2014B /* APIConfig.swift */; };
 		B89ACF461E2D5FFD00C6707B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89ACF451E2D5FFD00C6707B /* AppDelegate.swift */; };
 		B89ACF4D1E2D5FFD00C6707B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B89ACF4C1E2D5FFD00C6707B /* Assets.xcassets */; };
 		B89ACF501E2D5FFD00C6707B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B89ACF4E1E2D5FFD00C6707B /* LaunchScreen.storyboard */; };
@@ -27,6 +31,10 @@
 		B83EC4021E2D696200D2014B /* ViewControllersAssembly.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewControllersAssembly.swift; sourceTree = "<group>"; };
 		B83EC4041E2D696C00D2014B /* ViewModelsAssembly.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModelsAssembly.swift; sourceTree = "<group>"; };
 		B83EC4061E2D697D00D2014B /* ManagersAssembly.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManagersAssembly.swift; sourceTree = "<group>"; };
+		B83EC4081E2EA8EC00D2014B /* NetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		B83EC40B1E2EAABC00D2014B /* Shared.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
+		B83EC40E1E2EAAF900D2014B /* APIManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
+		B83EC4101E2EAB1700D2014B /* APIConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIConfig.swift; sourceTree = "<group>"; };
 		B89ACF421E2D5FFD00C6707B /* RandomUser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RandomUser.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B89ACF451E2D5FFD00C6707B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B89ACF4C1E2D5FFD00C6707B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -90,6 +98,24 @@
 			name = Assemblies;
 			sourceTree = "<group>";
 		};
+		B83EC40A1E2EA8EF00D2014B /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				B83EC4081E2EA8EC00D2014B /* NetworkManager.swift */,
+				B83EC40E1E2EAAF900D2014B /* APIManager.swift */,
+				B83EC4101E2EAB1700D2014B /* APIConfig.swift */,
+			);
+			name = Managers;
+			sourceTree = "<group>";
+		};
+		B83EC40D1E2EAABE00D2014B /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				B83EC40B1E2EAABC00D2014B /* Shared.swift */,
+			);
+			name = Utils;
+			sourceTree = "<group>";
+		};
 		B89ACF391E2D5FFD00C6707B = {
 			isa = PBXGroup;
 			children = (
@@ -116,6 +142,8 @@
 				B820AA3A1E2D638800995706 /* ViewModels */,
 				B820AA391E2D638300995706 /* Models */,
 				B83EC3FF1E2D691C00D2014B /* Assemblies */,
+				B83EC40A1E2EA8EF00D2014B /* Managers */,
+				B83EC40D1E2EAABE00D2014B /* Utils */,
 				B89ACF571E2D601500C6707B /* Supporting Files */,
 			);
 			path = RandomUser;
@@ -265,9 +293,13 @@
 			files = (
 				B83EC4051E2D696C00D2014B /* ViewModelsAssembly.swift in Sources */,
 				B820AA3E1E2D65F200995706 /* MainViewController.swift in Sources */,
+				B83EC4111E2EAB1700D2014B /* APIConfig.swift in Sources */,
+				B83EC40F1E2EAAF900D2014B /* APIManager.swift in Sources */,
 				B83EC4071E2D697D00D2014B /* ManagersAssembly.swift in Sources */,
 				B820AA3C1E2D639B00995706 /* User.swift in Sources */,
+				B83EC4091E2EA8EC00D2014B /* NetworkManager.swift in Sources */,
 				B89ACF461E2D5FFD00C6707B /* AppDelegate.swift in Sources */,
+				B83EC40C1E2EAABC00D2014B /* Shared.swift in Sources */,
 				B820AA401E2D660900995706 /* MainViewModel.swift in Sources */,
 				B83EC4031E2D696200D2014B /* ViewControllersAssembly.swift in Sources */,
 			);
@@ -382,6 +414,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F2E0A02332392BB3ED8ED100 /* Pods-RandomUser.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = MRC524739E;
 				INFOPLIST_FILE = RandomUser/Info.plist;
@@ -396,6 +429,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = ECD99A4A8E7BCB5B3226A11E /* Pods-RandomUser.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = MRC524739E;
 				INFOPLIST_FILE = RandomUser/Info.plist;

@@ -12,6 +12,24 @@ class ManagersAssembly: Assembly {
     
     func assemble(container: Container) {
         
+        // MARK: - API CONFIG
+        
+        container.register(APIConfig.self) { _ in
+            APIConfig()
+            }.inObjectScope(.container)
+        
+        // MARK: - API MANAGER
+        
+        container.register(APIManager.self) { r in
+            APIManager(r.resolve(APIConfig.self)!, r.resolve(NetworkManager.self)!)
+            }.inObjectScope(.container)
+        
+        // MARK: - NETWORK MANAGER
+        
+        container.register(NetworkManager.self) { _ in
+            NetworkManagerImpl()
+            }.inObjectScope(.container)
+        
     }
     
 }

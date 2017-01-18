@@ -16,7 +16,7 @@ class ViewModelsAssembly: Assembly {
         
         container.register(MainViewModel.self) { r in
             
-            let mainViewModel = MainViewModelImpl()
+            let mainViewModel = MainViewModelImpl(r.resolve(APIManager.self)!)
             return mainViewModel
             
         }

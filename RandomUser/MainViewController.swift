@@ -9,10 +9,14 @@
 import UIKit
 
 class MainViewController: UIViewController {
-
+    
+    var mainViewModel:MainViewModel?
+    var apiManager:APIManager?
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
+        mainViewModel?.initData()
 
     }
 
