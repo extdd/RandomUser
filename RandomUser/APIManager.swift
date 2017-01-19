@@ -28,6 +28,22 @@ struct APIManager {
     
     func loadUsers() {
         
+        // Recreating Realm database every run for testing only
+        
+        if let path = Realm.Configuration.defaultConfiguration.fileURL{
+            
+            if FileManager().fileExists(atPath: path.relativePath) {
+                do {
+                    try FileManager().removeItem(at: path.absoluteURL)
+                } catch {
+                    printError(error)
+                }
+            }
+            
+        }
+        
+        // Loading JSON and saving users data in Realm database
+        
         networkManager?.loadJSON(url: config!.urlWithParams) { json in
             
             if json != nil {
@@ -40,18 +56,22 @@ struct APIManager {
                 do {
                     
                     let users = try [User].decode(jsonUsers)
+                    let realm = try! Realm()
                     
-                    print("users count: \(users.count)")
+                    try! realm.write {
+                        realm.add(users, update: true)
+                    }
+                    
+                    print("users count: \(realm.objects(User.self).count)")
                     
                 } catch {
-                    
                     printError(error)
-                    
                 }
                 
             }
             
         }
+        
     }
     
 }
