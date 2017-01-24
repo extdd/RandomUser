@@ -12,6 +12,7 @@ import RxSwift
 import RxCocoa
 import RxRealm
 import RxRealmDataSources
+import SDWebImage
 import SnapKit
 
 class MainViewController: UIViewController {
@@ -25,6 +26,10 @@ class MainViewController: UIViewController {
     var buttonAdd:UIBarButtonItem?
     var tableView:UITableView?
     var sortingControl:UISegmentedControl?
+    
+    var userDefaultThumbnail:UIImage? {
+        return UIImage(named: "UserDefaultThumbnail")
+    }
     
     // MARK: - INIT
     
@@ -60,6 +65,9 @@ class MainViewController: UIViewController {
     fileprivate func updateCell(_ cell:UITableViewCell, forUser user:User) {
         
         cell.textLabel?.text = mainViewModel?.getCellLabel(forUser: user)
+        if let thumbnailURL = user.thumbnailURL {
+            cell.imageView?.sd_setImage(with: URL(string: thumbnailURL), placeholderImage: userDefaultThumbnail)
+        }
 
     }
     

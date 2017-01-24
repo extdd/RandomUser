@@ -15,18 +15,18 @@ final class User: Object {
     dynamic var username = ""
     dynamic var firstName = ""
     dynamic var lastName = ""
-    dynamic var pictureURL = ""
-    dynamic var thumbnailURL = ""
+    dynamic var pictureURL:String? = nil
+    dynamic var thumbnailURL:String? = nil
 
-    convenience init(gender:String, username:String, firstName:String, lastName:String, pictureURL:String? = "", thumbnailURL:String? = ""){
+    convenience init(gender:String, username:String, firstName:String, lastName:String, pictureURL:String?, thumbnailURL:String?) {
         
         self.init()
         self.gender = gender
         self.username = username
         self.firstName = firstName
         self.lastName = lastName
-        self.pictureURL = pictureURL!
-        self.thumbnailURL = thumbnailURL!
+        self.pictureURL = pictureURL
+        self.thumbnailURL = thumbnailURL
         
     }
     
@@ -38,7 +38,7 @@ final class User: Object {
 
 // MARK: - DECODABLE
 
-extension User : Decodable {
+extension User: Decodable {
     
     static func decode(_ json: Any) throws -> User {
         
@@ -47,7 +47,7 @@ extension User : Decodable {
             username: json => "login" => "username",
             firstName: json => "name" => "first",
             lastName: json => "name" => "last",
-            pictureURL: json => "picture" => "medium",
+            pictureURL: json => "picture" => "large",
             thumbnailURL: json => "picture" => "thumbnail"
         )
         
