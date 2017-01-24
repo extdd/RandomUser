@@ -7,15 +7,12 @@
 //
 
 import UIKit
-import SnapKit
+import RealmSwift
 import RxSwift
 import RxCocoa
-
-enum SortingMode: String {
-    
-    case firstName = "firstName", lastName = "lastName"
-    
-}
+import RxRealm
+import RxRealmDataSources
+import SnapKit
 
 class MainViewController: UIViewController {
     
@@ -25,8 +22,6 @@ class MainViewController: UIViewController {
     let disposeBag = DisposeBag()
     
     var mainViewModel:MainViewModel?
-    var apiManager:APIManager?
-    
     var buttonAdd:UIBarButtonItem?
     var tableView:UITableView?
     var sortingControl:UISegmentedControl?
@@ -41,13 +36,31 @@ class MainViewController: UIViewController {
         mainViewModel?.initData()
         
     }
-    
+
     // MARK: - TABLE VIEW DATA SOURCE
     
-    func updateTableData(sorted:SortingMode){
+    fileprivate func updateDataSource(sorted:SortingMode) {
+
+        tableView?.dataSource = nil
         
-        print("sorted: \(sorted.rawValue)")
+        let dataSource = RxTableViewRealmDataSource<User>(cellIdentifier: cellId, cellType: UITableViewCell.self) { [weak self] cell, index, user in
+            
+            self?.updateCell(cell, forUser: user)
+            
+        }
         
+        dataSource.animated = false
+
+        let realm = try! Realm()
+        let users = Observable.changesetFrom(realm.objects(User.self).sorted(byKeyPath: sorted.rawValue))
+        users.bindTo(tableView!.rx.realmChanges(dataSource)).addDisposableTo(disposeBag)
+  
+    }
+    
+    fileprivate func updateCell(_ cell:UITableViewCell, forUser user:User) {
+        
+        cell.textLabel?.text = mainViewModel?.getCellLabel(forUser: user)
+
     }
     
     // MARK: - RX
@@ -68,13 +81,13 @@ class MainViewController: UIViewController {
             
             switch (value) {
             case 0:
-                self?.updateTableData(sorted: SortingMode.firstName)
+                self?.updateDataSource(sorted: .firstName)
             case 1:
-                self?.updateTableData(sorted: SortingMode.lastName)
+                self?.updateDataSource(sorted: .lastName)
             default:
                 return
             }
-            
+
         }).addDisposableTo(disposeBag)
         
     }
@@ -83,13 +96,13 @@ class MainViewController: UIViewController {
     
     fileprivate func initUI(){
         
-        self.view.backgroundColor = UIColor.white
+        self.view.backgroundColor = .white
         self.title = navigationBarTitle
-        
+
         initNavigationBar()
         initSortingControl()
         initTableView()
-        
+
     }
     
     fileprivate func initNavigationBar() {

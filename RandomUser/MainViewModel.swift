@@ -8,11 +8,18 @@
 
 import Foundation
 
+enum SortingMode: String {
+    
+    case firstName = "firstName", lastName = "lastName"
+    
+}
+
 // MARK: - INTERFACE
 
 protocol MainViewModel {
     
     func initData()
+    func getCellLabel(forUser user:User) -> String
     
 }
 
@@ -20,7 +27,7 @@ protocol MainViewModel {
 
 struct MainViewModelImpl: MainViewModel {
     
-    var apiManager:APIManager?
+    var apiManager:APIManager
     
     init(_ apiManager:APIManager){
         
@@ -30,8 +37,14 @@ struct MainViewModelImpl: MainViewModel {
     
     func initData() {
         
-        apiManager?.loadUsers()
+        apiManager.loadUsers()
         
     }
-
+    
+    func getCellLabel(forUser user:User) -> String {
+        
+        return "\(user.firstName.capitalized) \(user.lastName.capitalized)"
+        
+    }
+    
 }

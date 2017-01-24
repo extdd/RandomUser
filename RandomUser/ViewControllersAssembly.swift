@@ -18,7 +18,6 @@ class ViewControllersAssembly: Assembly {
             
             let mainViewController = MainViewController()
             mainViewController.mainViewModel = r.resolve(MainViewModel.self)!
-            mainViewController.apiManager = r.resolve(APIManager.self)!
             return mainViewController
             
         }
