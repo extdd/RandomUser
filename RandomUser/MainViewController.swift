@@ -19,15 +19,14 @@ class MainViewController: UIViewController {
     
     let navigationBarTitle = "Users" // title of the NavigationBar
     let cellId = "mainTableViewCell" // unique id of a TableView cell
-    let padding:CGFloat = 8
     let disposeBag = DisposeBag()
     
-    var mainViewModel:MainViewModel?
-    var buttonAdd:UIBarButtonItem?
-    var tableView:UITableView?
-    var sortingControl:UISegmentedControl?
-    
-    var userDefaultThumbnail:UIImage? {
+    var mainViewModel: MainViewModel?
+    var sortingBar: SortingBar?
+    var buttonAdd: UIBarButtonItem?
+    var tableView: UITableView?
+
+    var userDefaultThumbnail: UIImage? {
         return UIImage(named: "UserDefaultThumbnail")
     }
     
@@ -42,40 +41,11 @@ class MainViewController: UIViewController {
         
     }
 
-    // MARK: - TABLE VIEW DATA SOURCE
-    
-    fileprivate func updateDataSource(sorted:SortingMode) {
-
-        tableView?.dataSource = nil
-        
-        let dataSource = RxTableViewRealmDataSource<User>(cellIdentifier: cellId, cellType: UITableViewCell.self) { [weak self] cell, index, user in
-            
-            self?.updateCell(cell, forUser: user)
-            
-        }
-        
-        dataSource.animated = false
-
-        let realm = try! Realm()
-        let users = Observable.changesetFrom(realm.objects(User.self).sorted(byKeyPath: sorted.rawValue))
-        users.bindTo(tableView!.rx.realmChanges(dataSource)).addDisposableTo(disposeBag)
-  
-    }
-    
-    fileprivate func updateCell(_ cell:UITableViewCell, forUser user:User) {
-        
-        cell.textLabel?.text = mainViewModel?.getCellLabel(forUser: user)
-        if let thumbnailURL = user.thumbnailURL {
-            cell.imageView?.sd_setImage(with: URL(string: thumbnailURL), placeholderImage: userDefaultThumbnail)
-        }
-
-    }
-    
     // MARK: - RX
     
     fileprivate func initRX() {
         
-        // buttonAdd
+        // BUTTON ADD
         
         buttonAdd?.rx.tap.subscribe(onNext: { _ in
             
@@ -83,9 +53,9 @@ class MainViewController: UIViewController {
             
         }).addDisposableTo(disposeBag)
         
-        // sortingControl
+        // SORTING CONTROL
         
-        sortingControl?.rx.value.subscribe(onNext: { [weak self] value in
+        sortingBar?.segmentedControl.rx.value.subscribe(onNext: { [weak self] value in
             
             switch (value) {
             case 0:
@@ -100,6 +70,36 @@ class MainViewController: UIViewController {
         
     }
     
+    // MARK: - TABLE VIEW DATA SOURCE
+    
+    fileprivate func updateDataSource(sorted: SortingMode) {
+        
+        guard tableView != nil else {return}
+        
+        tableView!.dataSource = nil
+        
+        let dataSource = RxTableViewRealmDataSource<User>(cellIdentifier: cellId, cellType: UITableViewCell.self) { [weak self] cell, index, user in
+            self?.updateCell(cell, forUser: user)
+        }
+        
+        dataSource.animated = false
+        
+        let realm = try! Realm()
+        let users = Observable.changesetFrom(realm.objects(User.self).sorted(byKeyPath: sorted.rawValue))
+        users.bindTo(tableView!.rx.realmChanges(dataSource)).addDisposableTo(disposeBag)
+        
+    }
+    
+    fileprivate func updateCell(_ cell: UITableViewCell, forUser user: User) {
+        
+        cell.textLabel?.text = mainViewModel?.getCellLabel(forUser: user)
+        
+        if let thumbnailURL = user.thumbnailURL {
+            cell.imageView?.sd_setImage(with: URL(string: thumbnailURL), placeholderImage: userDefaultThumbnail)
+        }
+        
+    }
+    
     // MARK: - UI
     
     fileprivate func initUI(){
@@ -108,8 +108,8 @@ class MainViewController: UIViewController {
         self.title = navigationBarTitle
 
         initNavigationBar()
-        initSortingControl()
         initTableView()
+        setConstraints()
 
     }
     
@@ -118,33 +118,46 @@ class MainViewController: UIViewController {
         buttonAdd = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
         navigationItem.rightBarButtonItems = [buttonAdd!]
         
-    }
-    
-    fileprivate func initSortingControl() {
-        
-        sortingControl = UISegmentedControl(items: [SortingMode.firstName.rawValue, SortingMode.lastName.rawValue])
-        sortingControl!.backgroundColor = UIColor.white
-        sortingControl!.selectedSegmentIndex = 0
-        self.view.addSubview(sortingControl!)
-        
-        sortingControl!.snp.makeConstraints { make in
-            make.top.equalTo(self.topLayoutGuide.snp.bottom).offset(padding)
-            make.width.lessThanOrEqualTo(self.view).inset(padding)
-            make.centerX.equalToSuperview()
-        }
+        sortingBar = SortingBar(frame: .zero, withItems: [SortingMode.firstName.rawValue, SortingMode.lastName.rawValue])
+        self.view.addSubview(sortingBar!)
         
     }
     
     fileprivate func initTableView() {
         
-        tableView = UITableView(frame: CGRect.zero, style: .plain)
+        tableView = UITableView(frame: .zero, style: .plain)
         tableView!.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
+        tableView!.backgroundColor = .white
         self.view.addSubview(tableView!)
+        self.view.sendSubview(toBack: tableView!)
+
+    }
+    
+    // MARK: - CONSTRAINTS
+    
+    func setConstraints() {
         
-        tableView!.snp.makeConstraints { make in
-            make.top.equalTo(sortingControl!.snp.bottom).offset(padding)
+        sortingBar?.snp.makeConstraints { make in
+            make.top.equalTo(self.topLayoutGuide.snp.bottom)
+            make.left.right.equalToSuperview()
+        }
+        
+        tableView?.snp.makeConstraints { make in
+            make.top.equalTo(self.topLayoutGuide.snp.bottom)
             make.bottom.left.right.equalTo(self.view)
         }
+        
+    }
+
+    // MARK: - LAYOUT
+    
+    override func viewDidLayoutSubviews() {
+        
+        guard sortingBar != nil else {return}
+        
+        let sortingBarHeight = sortingBar!.frame.height
+        tableView?.contentInset.top = sortingBarHeight
+        tableView?.scrollIndicatorInsets.top = sortingBarHeight
         
     }
     
