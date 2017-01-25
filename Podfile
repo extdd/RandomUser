@@ -6,14 +6,16 @@ target 'RandomUser' do
   use_frameworks!
 
   # Pods for RandomUser
+
   pod 'RealmSwift'
   pod 'RxRealm'
-  pod 'RxSwift',        '~> 3.0'
-  pod 'RxCocoa',        '~> 3.0'
-  pod 'RxDataSources',  '~> 1.0'
-  pod 'Decodable',      '~> 0.5'
-  pod 'SnapKit',        '~> 3.1.2'
-  pod 'Swinject',       '~> 2.0.0-beta.3'
+  pod 'RxRealmDataSources'
+  pod 'RxSwift',            '~> 3.0'
+  pod 'RxCocoa',            '~> 3.0'
+  pod 'Decodable',          '~> 0.5'
+  pod 'SDWebImage',         '~> 3.8'
+  pod 'SnapKit',            '~> 3.1.2'
+  pod 'Swinject',           '~> 2.0.0-beta.3'
 
 end
 
