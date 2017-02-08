@@ -18,13 +18,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
-        let navigationVC = UINavigationController(rootViewController: assembler.resolver.resolve(MainViewController.self)!)
+        let rootViewController = assembler.resolver.resolve(MainViewController.self)!
+        let navigationController = UINavigationController(rootViewController: rootViewController, customized: true)
+        
+        UIBarButtonItem.appearance().tintColor = UIColor(hex: CustomColor.teal)
+        UINavigationBar.appearance().backgroundColor = UIColor(hex: CustomColor.violetDark)
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window!.backgroundColor = UIColor.white
-        window!.rootViewController = navigationVC
+        window!.rootViewController = navigationController
         window!.makeKeyAndVisible()
-        
+
         return true
         
     }
