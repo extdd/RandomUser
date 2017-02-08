@@ -23,7 +23,7 @@ class SortingBar: UIView {
         
         self.items = items
         
-        // SEGMENTED CONTROL
+        // segmentedControl
         
         segmentedControl = UISegmentedControl(items: items)
         segmentedControl.backgroundColor = UIColor.clear
@@ -33,13 +33,13 @@ class SortingBar: UIView {
         super.init(frame: frame)
         self.addSubview(segmentedControl)
         
-        // BODY
+        // body
         
         body = UIView(frame: .zero)
         self.addSubview(body!)
         self.sendSubview(toBack: body!)
 
-        // BLUR EFFECT
+        // blur
         
         let blur = UIBlurEffect(style: .light)
         blurView = UIVisualEffectView(effect: blur)
@@ -72,7 +72,7 @@ class SortingBar: UIView {
         }
         
         self.snp.makeConstraints { make in
-            make.height.equalTo(segmentedControl.snp.height).offset(Layout.padding*2)
+            make.height.equalTo(segmentedControl.snp.height).offset(Layout.margin)
         }
         
     }
