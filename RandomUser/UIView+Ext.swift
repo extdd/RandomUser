@@ -26,6 +26,21 @@ extension UIView {
     
 }
 
+// MARK: - UI NAVIGATION CONTROLLER
+
+extension UINavigationController {
+
+    convenience init(rootViewController: UIViewController, customized: Bool = false) {
+        
+        self.init(rootViewController: rootViewController)
+        guard customized == true else { return }
+        self.navigationBar.barStyle = .black
+        self.navigationBar.tintColor = UIColor(hex: CustomColor.teal)
+        
+    }
+    
+}
+
 // MARK: - SUPPORTING EXTENSIONS
 
 extension UIEdgeInsets {
