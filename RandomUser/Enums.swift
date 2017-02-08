@@ -37,7 +37,7 @@ enum SortingMode: String {
 
 enum DisplayMode {
     
-    case show, edit
+    case show, edit, add
     
 }
 
