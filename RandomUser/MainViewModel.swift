@@ -7,19 +7,21 @@
 //
 
 import Foundation
-
-enum SortingMode: String {
-    
-    case firstName = "firstName", lastName = "lastName"
-    
-}
+import RealmSwift
 
 // MARK: - INTERFACE
 
 protocol MainViewModel {
     
-    func initData()
-    func getCellLabel(forUser user:User) -> String
+    var apiManager: APIManager { get }
+    var realm: Realm { get }
+    var users: Results<User>? { get set }
+    
+    var navigationBarTitle: String { get set }
+
+    func initUsers()
+    mutating func updateUsers(sorted: SortingMode)
+    func getCellLabel(forUser user: User) -> String
     
 }
 
@@ -27,17 +29,28 @@ protocol MainViewModel {
 
 struct MainViewModelImpl: MainViewModel {
     
-    var apiManager:APIManager
+    let apiManager: APIManager
+    let realm: Realm
+    var users: Results<User>?
     
-    init(_ apiManager:APIManager){
+    var navigationBarTitle: String = "Users"
+    
+    init(_ apiManager: APIManager, _ realm: Realm) {
         
         self.apiManager = apiManager
+        self.realm = realm
         
     }
     
-    func initData() {
+    func initUsers() {
         
         apiManager.loadUsers()
+        
+    }
+    
+    mutating func updateUsers(sorted: SortingMode) {
+        
+        users = realm.objects(User.self).sorted(byKeyPath: sorted.rawValue)
         
     }
     

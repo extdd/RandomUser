@@ -7,27 +7,22 @@
 //
 
 import UIKit
-import RealmSwift
 import RxSwift
 import RxCocoa
-import RxRealm
 import RxRealmDataSources
 import SDWebImage
 import SnapKit
 
 class MainViewController: UIViewController {
     
-    let navigationBarTitle = "Users" // title of the NavigationBar
-    let cellId = "mainTableViewCell" // unique id of a TableView cell
-    let disposeBag = DisposeBag()
-    
-    var mainViewModel: MainViewModel?
+    var viewModel: MainViewModel?
     var sortingBar: SortingBar?
-    var buttonAdd: UIBarButtonItem?
+    var addButton: UIBarButtonItem?
     var tableView: UITableView?
-
-    var userDefaultThumbnail: UIImage? {
-        return UIImage(named: "UserDefaultThumbnail")
+    
+    fileprivate let disposeBag = DisposeBag()
+    fileprivate var userDefaultThumbnail: UIImage? {
+        return UIImage(named: Images.userDefaultThumbnailName)
     }
     
     // MARK: - INIT
@@ -35,78 +30,19 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         
         super.viewDidLoad()
+        
         initUI()
         initRX()
-        mainViewModel?.initData()
+        viewModel?.initUsers()
         
     }
 
-    // MARK: - RX
-    
-    fileprivate func initRX() {
-        
-        // BUTTON ADD
-        
-        buttonAdd?.rx.tap.subscribe(onNext: { _ in
-            
-            print("add")
-            
-        }).addDisposableTo(disposeBag)
-        
-        // SORTING CONTROL
-        
-        sortingBar?.segmentedControl.rx.value.subscribe(onNext: { [weak self] value in
-            
-            switch (value) {
-            case 0:
-                self?.updateDataSource(sorted: .firstName)
-            case 1:
-                self?.updateDataSource(sorted: .lastName)
-            default:
-                return
-            }
-
-        }).addDisposableTo(disposeBag)
-        
-    }
-    
-    // MARK: - TABLE VIEW DATA SOURCE
-    
-    fileprivate func updateDataSource(sorted: SortingMode) {
-        
-        guard tableView != nil else {return}
-        
-        tableView!.dataSource = nil
-        
-        let dataSource = RxTableViewRealmDataSource<User>(cellIdentifier: cellId, cellType: UITableViewCell.self) { [weak self] cell, index, user in
-            self?.updateCell(cell, forUser: user)
-        }
-        
-        dataSource.animated = false
-        
-        let realm = try! Realm()
-        let users = Observable.changesetFrom(realm.objects(User.self).sorted(byKeyPath: sorted.rawValue))
-        users.bindTo(tableView!.rx.realmChanges(dataSource)).addDisposableTo(disposeBag)
-        
-    }
-    
-    fileprivate func updateCell(_ cell: UITableViewCell, forUser user: User) {
-        
-        cell.textLabel?.text = mainViewModel?.getCellLabel(forUser: user)
-        
-        if let thumbnailURL = user.thumbnailURL {
-            cell.imageView?.sd_setImage(with: URL(string: thumbnailURL), placeholderImage: userDefaultThumbnail)
-        }
-        
-    }
-    
     // MARK: - UI
     
     fileprivate func initUI(){
         
         self.view.backgroundColor = .white
-        self.title = navigationBarTitle
-
+        
         initNavigationBar()
         initTableView()
         setConstraints()
@@ -115,8 +51,10 @@ class MainViewController: UIViewController {
     
     fileprivate func initNavigationBar() {
         
-        buttonAdd = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
-        navigationItem.rightBarButtonItems = [buttonAdd!]
+        self.title = viewModel?.navigationBarTitle
+        
+        addButton = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
+        navigationItem.rightBarButtonItems = [addButton!]
         
         sortingBar = SortingBar(frame: .zero, withItems: [SortingMode.firstName.rawValue, SortingMode.lastName.rawValue])
         self.view.addSubview(sortingBar!)
@@ -126,11 +64,35 @@ class MainViewController: UIViewController {
     fileprivate func initTableView() {
         
         tableView = UITableView(frame: .zero, style: .plain)
-        tableView!.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
+        tableView!.register(UITableViewCell.self, forCellReuseIdentifier: UITableViewCell.className)
         tableView!.backgroundColor = .white
         self.view.addSubview(tableView!)
         self.view.sendSubview(toBack: tableView!)
 
+    }
+    
+    // MARK: - RX
+    
+    fileprivate func initRX() {
+        
+        // addButton
+        addButton?.rx.tap.subscribe(onNext: { _ in
+            print("add")
+        }).addDisposableTo(disposeBag)
+        
+        // sortingBar
+        sortingBar?.segmentedControl.rx.value.subscribe(onNext: { [weak self] value in
+            switch (value) {
+            case 0:
+                self?.viewModel?.updateUsers(sorted: .firstName)
+            case 1:
+                self?.viewModel?.updateUsers(sorted: .lastName)
+            default:
+                return
+            }
+            self?.updateDataSource()
+        }).addDisposableTo(disposeBag)
+        
     }
     
     // MARK: - CONSTRAINTS
@@ -138,26 +100,67 @@ class MainViewController: UIViewController {
     func setConstraints() {
         
         sortingBar?.snp.makeConstraints { make in
-            make.top.equalTo(self.topLayoutGuide.snp.bottom)
+            make.top.equalTo(topLayoutGuide.snp.bottom)
             make.left.right.equalToSuperview()
         }
         
         tableView?.snp.makeConstraints { make in
-            make.top.equalTo(self.topLayoutGuide.snp.bottom)
-            make.bottom.left.right.equalTo(self.view)
+            make.top.equalTo(topLayoutGuide.snp.bottom)
+            make.bottom.left.right.equalTo(view)
         }
         
     }
 
-    // MARK: - LAYOUT
+    // MARK: - EVENTS
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+        if let indexPath = tableView?.indexPathForSelectedRow {
+            self.tableView?.deselectRow(at: indexPath, animated: false)
+        }
+        
+    }
     
     override func viewDidLayoutSubviews() {
         
-        guard sortingBar != nil else {return}
-        
+        guard sortingBar != nil else { return }
         let sortingBarHeight = sortingBar!.frame.height
         tableView?.contentInset.top = sortingBarHeight
         tableView?.scrollIndicatorInsets.top = sortingBarHeight
+        
+    }
+    
+}
+
+// MARK: - TABLE VIEW DATA SOURCE
+
+extension MainViewController {
+    
+    fileprivate func updateDataSource() {
+        
+        guard tableView != nil else { return }
+        tableView!.dataSource = nil
+        
+        let dataSource = RxTableViewRealmDataSource<User>(cellIdentifier: UITableViewCell.className, cellType: UITableViewCell.self) {
+            [weak self] cell, indexPath, user in
+            self?.updateCell(cell, forUser: user)
+        }
+        
+        dataSource.animated = false
+        
+        if let users = viewModel?.users {
+            Observable.changeset(from: users).bindTo(tableView!.rx.realmChanges(dataSource)).addDisposableTo(disposeBag)
+        }
+        
+    }
+    
+    fileprivate func updateCell(_ cell: UITableViewCell, forUser user: User) {
+        
+        cell.textLabel?.text = viewModel?.getCellLabel(forUser: user)
+        cell.textLabel?.textColor = UIColor(hex: CustomColor.text)
+        if let thumbnailURL = user.thumbnailURL {
+            cell.imageView?.sd_setImage(with: URL(string: thumbnailURL), placeholderImage: userDefaultThumbnail)
+        }
         
     }
     
