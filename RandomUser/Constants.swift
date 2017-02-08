@@ -37,7 +37,7 @@ struct CustomColor {
 struct Images {
     
     static let userDefaultThumbnailName: String = "UserDefaultThumbnail"
-    static let userDefaultPictureName: String = "UserDefaultPicture"
+    static let userDefaultPictureName: String = "UserDefaultLarge"
     
 }
 
