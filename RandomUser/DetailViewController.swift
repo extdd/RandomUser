@@ -17,13 +17,10 @@ class DetailViewController: UIViewController {
     
     var viewModel: DetailViewModel?
     var content: DetailViewContent?
-
     var scrollViewContainer: UIView?
     var scrollView: UIScrollView? // for auto scrolling content when the keyboard appears
     
-    fileprivate let navigationBarTitle: String = "User details"
     fileprivate let disposeBag = DisposeBag()
-    
     fileprivate var editButton: UIBarButtonItem?
     fileprivate var saveButton: UIBarButtonItem?
     fileprivate var cancelButton: UIBarButtonItem?
@@ -48,7 +45,7 @@ class DetailViewController: UIViewController {
         
         self.automaticallyAdjustsScrollViewInsets = false
         self.view.backgroundColor = .white
-        self.title = navigationBarTitle
+        self.title = viewModel?.navigationBarTitle
         
         initNavigationBar()
         initContent()
@@ -63,6 +60,9 @@ class DetailViewController: UIViewController {
         editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: nil, action: nil)
         cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
         saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: nil, action: nil)
+        
+        guard viewModel != nil else { return }
+        self.title = viewModel!.navigationBarTitle
         
     }
     
@@ -109,12 +109,27 @@ class DetailViewController: UIViewController {
         }).addDisposableTo(disposeBag)
         
         saveButton?.rx.tap.subscribe(onNext: { [weak self] in
+            self?.save()
             self?.displayMode = .show
         }).addDisposableTo(disposeBag)
         
         cancelButton?.rx.tap.subscribe(onNext: { [weak self] in
             self?.displayMode = .show
         }).addDisposableTo(disposeBag)
+        
+    }
+    
+    // MARK: - SAVE
+    
+    fileprivate func save() {
+        
+        guard content != nil else { return }
+        
+        viewModel?.save(gender: Gender.all[content!.genderPickerView.selectedRow(inComponent: 0)].rawValue,
+                        firstName: content!.firstNameInput.text,
+                        lastName: content!.lastNameInput.text,
+                        email: content!.emailInput.text,
+                        phone: content!.phoneInput.text)
         
     }
     
