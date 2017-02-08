@@ -15,10 +15,11 @@ protocol MainViewModel {
     
     var apiManager: APIManager { get }
     var realm: Realm { get }
-    var users: Results<User>? { get set }
     
+    var users: Results<User>? { get set }
+    var newUser: User { get set }
     var navigationBarTitle: String { get set }
-
+    
     func initUsers()
     mutating func updateUsers(sorted: SortingMode)
     func getCellLabel(forUser user: User) -> String
@@ -31,8 +32,9 @@ struct MainViewModelImpl: MainViewModel {
     
     let apiManager: APIManager
     let realm: Realm
-    var users: Results<User>?
     
+    var users: Results<User>?
+    var newUser: User = { return User() }()
     var navigationBarTitle: String = "Users"
     
     init(_ apiManager: APIManager, _ realm: Realm) {
@@ -54,7 +56,7 @@ struct MainViewModelImpl: MainViewModel {
         
     }
     
-    func getCellLabel(forUser user:User) -> String {
+    func getCellLabel(forUser user: User) -> String {
         
         return "\(user.firstName.capitalized) \(user.lastName.capitalized)"
         

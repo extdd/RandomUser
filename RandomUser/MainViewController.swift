@@ -76,8 +76,8 @@ class MainViewController: UIViewController {
     fileprivate func initRX() {
         
         // addButton
-        addButton?.rx.tap.subscribe(onNext: { _ in
-            print("add")
+        addButton?.rx.tap.subscribe(onNext: { [weak self] in
+            self?.showDetail(forNewUser: true)
         }).addDisposableTo(disposeBag)
         
         // sortingBar
@@ -92,6 +92,35 @@ class MainViewController: UIViewController {
             }
             self?.updateDataSource()
         }).addDisposableTo(disposeBag)
+        
+        // tableView
+        tableView?.rx.itemSelected.subscribe(onNext: { [weak self] indexPath in
+            self?.showDetail(forRowAt: indexPath)
+        }).addDisposableTo(disposeBag)
+        
+    }
+    
+    // MARK: - ACTIONS
+    
+    fileprivate func showDetail(forRowAt indexPath: IndexPath? = nil, forNewUser new: Bool? = false) {
+        
+        guard let users = self.viewModel?.users else { return }
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let detailViewController = appDelegate.assembler.resolver.resolve(DetailViewController.self)!
+        
+        if indexPath != nil {
+            
+            detailViewController.viewModel?.activeUser = users[indexPath!.row]
+            self.navigationController?.pushViewController(detailViewController, animated: true)
+            
+        } else if new == true {
+            
+            detailViewController.viewModel?.activeUser = viewModel?.newUser
+            let navigationController = UINavigationController(rootViewController: detailViewController, customized: true)
+            self.present(navigationController, animated: true)
+            
+        }
         
     }
     
