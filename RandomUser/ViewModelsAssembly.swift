@@ -7,6 +7,7 @@
 //
 
 import Swinject
+import RealmSwift
 
 class ViewModelsAssembly: Assembly {
     
@@ -15,10 +16,13 @@ class ViewModelsAssembly: Assembly {
         // MARK: - MAIN VIEW MODEL
         
         container.register(MainViewModel.self) { r in
-            
-            let mainViewModel = MainViewModelImpl(r.resolve(APIManager.self)!)
-            return mainViewModel
-            
+            return MainViewModelImpl(r.resolve(APIManager.self)!, r.resolve(Realm.self)!)
+        }
+        
+        // MARK: - DETAIL VIEW MODEL
+        
+        container.register(DetailViewModel.self) { r in
+            return DetailViewModelImpl(r.resolve(Realm.self)!)
         }
         
     }

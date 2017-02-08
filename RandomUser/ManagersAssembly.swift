@@ -7,27 +7,36 @@
 //
 
 import Swinject
+import RealmSwift
 
 class ManagersAssembly: Assembly {
     
     func assemble(container: Container) {
         
-        // MARK: - API CONFIG
-        
-        container.register(APIConfig.self) { _ in
-            APIConfig()
-            }.inObjectScope(.container)
-        
         // MARK: - API MANAGER
         
+        container.register(APIConfig.self) { _ in
+            APIConfigImpl()
+            }
+        
         container.register(APIManager.self) { r in
-            APIManager(r.resolve(APIConfig.self)!, r.resolve(NetworkManager.self)!)
+            APIManagerImpl(r.resolve(APIConfig.self)!, r.resolve(NetworkManager.self)!)
             }.inObjectScope(.container)
         
         // MARK: - NETWORK MANAGER
         
         container.register(NetworkManager.self) { _ in
             NetworkManagerImpl()
+            }.inObjectScope(.container)
+        
+        // MARK: - REALM
+        
+        container.register(Realm.Configuration.self) { r in
+            Realm.Configuration()
+            }
+
+        container.register(Realm.self) { r in
+            try! Realm(configuration: r.resolve(Realm.Configuration.self)!)
             }.inObjectScope(.container)
         
     }

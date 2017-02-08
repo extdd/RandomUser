@@ -11,14 +11,24 @@ import Swinject
 class ViewControllersAssembly: Assembly {
     
     func assemble(container: Container) {
-        
+
         // MARK: - MAIN VIEW CONTROLLER
         
         container.register(MainViewController.self) { r in
             
             let mainViewController = MainViewController()
-            mainViewController.mainViewModel = r.resolve(MainViewModel.self)!
+            mainViewController.viewModel = r.resolve(MainViewModel.self)!
             return mainViewController
+            
+        }
+        
+        // MARK: - MAIN VIEW CONTROLLER
+        
+        container.register(DetailViewController.self) { r in
+            
+            let detailViewController = DetailViewController()
+            detailViewController.viewModel = r.resolve(DetailViewModel.self)!
+            return detailViewController
             
         }
         
