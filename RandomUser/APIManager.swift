@@ -14,24 +14,36 @@ fileprivate enum APIManagerError: Error {
     
 }
 
-struct APIManager {
+// MARK: - INTERFACE
+
+protocol APIManager {
     
-    var config:APIConfig!
-    var networkManager:NetworkManager!
+    var config: APIConfig { get }
+    var networkManager: NetworkManager { get }
     
-    init(_ config:APIConfig, _ networkManager:NetworkManager) {
+    func loadUsers()
+    
+}
+
+// MARK: - IMPLEMENTATION
+
+struct APIManagerImpl: APIManager {
+    
+    let config: APIConfig
+    let networkManager: NetworkManager
+    
+    init(_ config: APIConfig, _ networkManager: NetworkManager) {
         
         self.config = config
         self.networkManager = networkManager
-        
+
     }
     
     func loadUsers() {
         
-        // Recreating Realm database every run for testing only
+        // recreating Realm database every run for testing only
         
-        if let path = Realm.Configuration.defaultConfiguration.fileURL{
-            
+        if let path = Realm.Configuration.defaultConfiguration.fileURL {
             if FileManager().fileExists(atPath: path.relativePath) {
                 do {
                     try FileManager().removeItem(at: path.absoluteURL)
@@ -39,37 +51,26 @@ struct APIManager {
                     printError(error)
                 }
             }
-            
         }
         
-        // Loading JSON and saving users data in Realm database
+        // loading JSON and saving users data in Realm database
         
-        networkManager?.loadJSON(url: config!.urlWithParams) { json in
-            
+        networkManager.loadJSON(url: config.urlWithParams) { json in
             if json != nil {
-                
                 guard let jsonUsers = json!["results"] else {
                     printError(APIManagerError.NoUsersData)
                     return
                 }
-                
                 do {
-                    
                     let users = try [User].decode(jsonUsers)
                     let realm = try! Realm()
-                    
                     try! realm.write {
                         realm.add(users, update: true)
                     }
-                    
-                    print("users count: \(realm.objects(User.self).count)")
-                    
                 } catch {
                     printError(error)
                 }
-                
             }
-            
         }
         
     }
