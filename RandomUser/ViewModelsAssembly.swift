@@ -16,14 +16,14 @@ class ViewModelsAssembly: Assembly {
         // MARK: - MAIN VIEW MODEL
         
         container.register(MainViewModel.self) { r in
-            return MainViewModelImpl(r.resolve(APIManager.self)!, r.resolve(Realm.self)!)
-        }
+            return MainViewModelImpl(r.resolve(APIManager.self)!)
+            }
         
         // MARK: - DETAIL VIEW MODEL
         
         container.register(DetailViewModel.self) { r in
-            return DetailViewModelImpl(r.resolve(Realm.self)!)
-        }
+            return DetailViewModelImpl()
+            }
         
     }
     

@@ -20,7 +20,7 @@ class ManagersAssembly: Assembly {
             }
         
         container.register(APIManager.self) { r in
-            APIManagerImpl(r.resolve(APIConfig.self)!, r.resolve(NetworkManager.self)!)
+            APIManagerImpl(r.resolve(APIConfig.self)!, r.resolve(NetworkManager.self)!, r.resolve(Realm.self)!)
             }.inObjectScope(.container)
         
         // MARK: - NETWORK MANAGER
@@ -31,13 +31,13 @@ class ManagersAssembly: Assembly {
         
         // MARK: - REALM
         
-        container.register(Realm.Configuration.self) { r in
-            Realm.Configuration()
-            }
+        container.register(Realm.Configuration.self) { _ in
+            Realm.Configuration(deleteRealmIfMigrationNeeded: true)
+            }.inObjectScope(.container)
 
         container.register(Realm.self) { r in
             try! Realm(configuration: r.resolve(Realm.Configuration.self)!)
-            }.inObjectScope(.container)
+            }
         
     }
     
