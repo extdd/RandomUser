@@ -14,13 +14,10 @@ import RealmSwift
 protocol MainViewModel {
     
     var apiManager: APIManager { get }
-    var realm: Realm { get }
     
     var users: Results<User>? { get set }
-    var newUser: User { get set }
     var navigationBarTitle: String { get set }
     
-    func initUsers()
     mutating func updateUsers(sorted: SortingMode)
     func getCellLabel(forUser user: User) -> String
     
@@ -31,34 +28,26 @@ protocol MainViewModel {
 struct MainViewModelImpl: MainViewModel {
     
     let apiManager: APIManager
-    let realm: Realm
     
     var users: Results<User>?
-    var newUser: User = { return User() }()
     var navigationBarTitle: String = "Users"
     
-    init(_ apiManager: APIManager, _ realm: Realm) {
+    init(_ apiManager: APIManager) {
         
         self.apiManager = apiManager
-        self.realm = realm
-        
-    }
-    
-    func initUsers() {
-        
-        apiManager.loadUsers()
         
     }
     
     mutating func updateUsers(sorted: SortingMode) {
         
+        let realm = try! Realm()
         users = realm.objects(User.self).sorted(byKeyPath: sorted.rawValue)
         
     }
     
     func getCellLabel(forUser user: User) -> String {
         
-        return "\(user.firstName.capitalized) \(user.lastName.capitalized)"
+        return "\(user.fullName)"
         
     }
     

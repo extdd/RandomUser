@@ -68,31 +68,33 @@ class DetailViewContent: UIView {
     
     // MARK: - UPDATE UI
     
-    func update(forActiveUser activeUser: User?, displayMode: DisplayMode? = .show) {
+    func update(forUser user: User, displayMode: DisplayMode) {
         
         clear()
-        
-        guard let user = activeUser else { return }
         
         if let pictureURL = user.pictureURL {
             pictureImageView.sd_setImage(with: URL(string: pictureURL), placeholderImage: userDefaultPicture)
         }
         
-        if displayMode == .show {
-            
+        switch (displayMode) {
+        case .show:
+
             nameValue.text = user.fullName
             genderValue.text = user.gender
             emailValue.text = user.email
             phoneValue.text = user.phone
             self.addSubviews([nameValue, genderValue, emailValue, phoneValue, historyButton])
             
-        } else if displayMode == .edit {
+        case .add:
+            firstNameInput.becomeFirstResponder()
+            fallthrough
+            
+        case .edit:
             
             firstNameInput.text = user.firstName
             lastNameInput.text = user.lastName
             emailInput.text = user.email
             phoneInput.text = user.phone
-            genderPickerView.alpha = 0.5
             genderPickerView.selectRow(Gender.fromString(string: user.gender).hashValue, inComponent: 0, animated: false)
             self.addSubviews([firstNameInput, lastNameInput, emailInput, phoneInput, genderPickerView])
             
@@ -125,7 +127,6 @@ class DetailViewContent: UIView {
             make.right.equalTo(snp.rightMargin) }
 
         switch (displayMode!) {
-            
         case .show:
             
             // name
@@ -161,7 +162,7 @@ class DetailViewContent: UIView {
                 make.left.right.equalTo(phoneHeader)
                 make.height.equalTo(40) }
             
-        case .edit:
+        case .edit, .add:
             
             // name
             firstNameInput.snp.remakeConstraints { make in

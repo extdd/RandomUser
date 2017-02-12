@@ -17,16 +17,23 @@ final class User: Object {
     dynamic var username = ""
     dynamic var firstName = ""
     dynamic var lastName = ""
-    dynamic var email = ""
-    dynamic var phone = ""
-    dynamic var pictureURL:String? = nil
-    dynamic var thumbnailURL:String? = nil
+    dynamic var email: String? = nil
+    dynamic var phone: String? = nil
+    dynamic var pictureURL: String? = nil
+    dynamic var thumbnailURL: String? = nil
     
     var fullName: String {
         return "\(firstName.capitalized) \(lastName.capitalized)"
     }
     
-    convenience init(gender:String, username:String, firstName:String, lastName:String, email:String, phone:String, pictureURL:String? = nil, thumbnailURL:String? = nil) {
+    convenience init(gender: String,
+                     username: String,
+                     firstName: String,
+                     lastName: String,
+                     email: String? = nil,
+                     phone: String? = nil,
+                     pictureURL: String? = nil,
+                     thumbnailURL:String? = nil) {
         
         self.init()
         self.gender = gender

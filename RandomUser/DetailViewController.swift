@@ -16,6 +16,8 @@ import SnapKit
 class DetailViewController: UIViewController {
     
     var viewModel: DetailViewModel?
+    var apiManager: APIManager?
+    
     var content: DetailViewContent?
     var scrollViewContainer: UIView?
     var scrollView: UIScrollView? // for auto scrolling content when the keyboard appears
@@ -24,6 +26,8 @@ class DetailViewController: UIViewController {
     fileprivate var editButton: UIBarButtonItem?
     fileprivate var saveButton: UIBarButtonItem?
     fileprivate var cancelButton: UIBarButtonItem?
+    fileprivate var addButton: UIBarButtonItem?
+    fileprivate var backButton: UIBarButtonItem?
     fileprivate var displayMode: DisplayMode? {
         didSet {
             updateUI()
@@ -51,15 +55,24 @@ class DetailViewController: UIViewController {
         initContent()
         initRX()
         
-        displayMode = .show
+        if presentingViewController != nil {
+            // view controller is presented (adding new user)
+            displayMode = .add
+        } else {
+            // view controller is pushed (showing details)
+            displayMode = .show
+        }
         
     }
     
     fileprivate func initNavigationBar() {
         
         editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: nil, action: nil)
-        cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
         saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: nil, action: nil)
+        cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
+        
+        backButton = UIBarButtonItem(title: "Back", style: .plain, target: nil, action: nil)
+        addButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
         
         guard viewModel != nil else { return }
         self.title = viewModel!.navigationBarTitle
@@ -103,13 +116,13 @@ class DetailViewController: UIViewController {
             self?.scrollView?.contentInset.bottom = keyboardVisibleHeight
         }).addDisposableTo(disposeBag)
         
-        // navigation bar buttons
+        // navigation bar buttons - show / edit mode
         editButton?.rx.tap.subscribe(onNext: { [weak self] in
             self?.displayMode = .edit
         }).addDisposableTo(disposeBag)
         
         saveButton?.rx.tap.subscribe(onNext: { [weak self] in
-            self?.save()
+            self?.saveActiveUser()
             self?.displayMode = .show
         }).addDisposableTo(disposeBag)
         
@@ -117,19 +130,37 @@ class DetailViewController: UIViewController {
             self?.displayMode = .show
         }).addDisposableTo(disposeBag)
         
+        // navigation bar buttons - add mode
+        
+        addButton?.rx.tap.subscribe(onNext: { [weak self] in
+            self?.saveActiveUser(isNew: true)
+            self?.dismiss(animated: true)
+        }).addDisposableTo(disposeBag)
+        
+        backButton?.rx.tap.subscribe(onNext: { [weak self] in
+            self?.view.endEditing(true)
+            self?.dismiss(animated: true)
+        }).addDisposableTo(disposeBag)
+ 
     }
     
     // MARK: - SAVE
     
-    fileprivate func save() {
+    fileprivate func saveActiveUser(isNew: Bool = false) {
         
         guard content != nil else { return }
         
-        viewModel?.save(gender: Gender.all[content!.genderPickerView.selectedRow(inComponent: 0)].rawValue,
-                        firstName: content!.firstNameInput.text,
-                        lastName: content!.lastNameInput.text,
-                        email: content!.emailInput.text,
-                        phone: content!.phoneInput.text)
+        guard let user = viewModel?.activeUser else { return }
+        guard let firstName = content!.firstNameInput.text else { return }
+        guard let lastName = content!.lastNameInput.text else { return }
+        
+        apiManager?.save(user: user,
+                         isNew: isNew,
+                         gender: Gender.all[content!.genderPickerView.selectedRow(inComponent: 0)],
+                         firstName: firstName,
+                         lastName: lastName,
+                         email: content!.emailInput.text,
+                         phone: content!.phoneInput.text)
         
     }
     
@@ -137,22 +168,31 @@ class DetailViewController: UIViewController {
     
     fileprivate func updateUI() {
 
+        guard displayMode != nil else { return }
+        
         switch displayMode! {
         case .show:
             self.navigationItem.leftBarButtonItems = []
             self.navigationItem.rightBarButtonItems = [editButton!]
             self.view.backgroundColor = .white
+        case .edit, .add:
+            self.view.backgroundColor = UIColor(hex: CustomColor.grayLight)
+            fallthrough
         case .edit:
+            guard displayMode == .edit else { fallthrough }
             self.navigationItem.leftBarButtonItems = [cancelButton!]
             self.navigationItem.rightBarButtonItems = [saveButton!]
-            self.view.backgroundColor = UIColor(hex: CustomColor.grayLight)
+        case .add:
+            self.navigationItem.leftBarButtonItems = [backButton!]
+            self.navigationItem.rightBarButtonItems = [addButton!]
         }
 
-        content?.update(forActiveUser: viewModel?.activeUser, displayMode: displayMode)
-
+        guard let user = viewModel?.activeUser else { return }
+        content?.update(forUser: user, displayMode: displayMode!)
+        
     }
-
-    fileprivate func updateContentSize() { 
+    
+    fileprivate func updateContentSize() {
         
         if var contentSize = self.content?.realContentSize { // calculated real content size for proper scrolling (Shared+Ext.swfit)
             contentSize.height += Layout.margin

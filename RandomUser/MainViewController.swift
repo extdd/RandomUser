@@ -16,6 +16,8 @@ import SnapKit
 class MainViewController: UIViewController {
     
     var viewModel: MainViewModel?
+    var apiManager: APIManager?
+    
     var sortingBar: SortingBar?
     var addButton: UIBarButtonItem?
     var tableView: UITableView?
@@ -33,7 +35,7 @@ class MainViewController: UIViewController {
         
         initUI()
         initRX()
-        viewModel?.initUsers()
+        apiManager?.loadUsers()
         
     }
 
@@ -116,7 +118,7 @@ class MainViewController: UIViewController {
             
         } else if new == true {
             
-            detailViewController.viewModel?.activeUser = viewModel?.newUser
+            detailViewController.viewModel?.activeUser = apiManager?.getNewUser()
             let navigationController = UINavigationController(rootViewController: detailViewController, customized: true)
             self.present(navigationController, animated: true)
             
@@ -189,6 +191,8 @@ extension MainViewController {
         cell.textLabel?.textColor = UIColor(hex: CustomColor.text)
         if let thumbnailURL = user.thumbnailURL {
             cell.imageView?.sd_setImage(with: URL(string: thumbnailURL), placeholderImage: userDefaultThumbnail)
+        } else {
+            cell.imageView?.image = userDefaultThumbnail
         }
         
     }
