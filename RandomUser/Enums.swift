@@ -13,9 +13,18 @@ import Foundation
 enum Gender: String {
     
     case male = "male", female = "female"
-    static let all: [Gender] = [.male, .female]
     
-    static func fromString(string: String) -> Gender {
+    var symbol: String {
+        switch self {
+        case .male:
+            return "♂"
+        case .female:
+            return "♀"
+        }
+    }
+    
+    static let all: [Gender] = [.male, .female]
+    static func from(string: String) -> Gender {
         
         var gender: Gender = .male
         self.all.forEach { if $0.rawValue == string.lowercased() { gender = $0 } }
@@ -41,3 +50,14 @@ enum DisplayMode {
     
 }
 
+// MARK: - NETWORK DATA ERROR
+
+enum NetworkDataError: String, Error, CustomStringConvertible {
+    
+    case NoData, InvalidJSON, NoUsersData
+    
+    var description: String {
+        return "\(type(of: self)) \(self.rawValue)"
+    }
+    
+}

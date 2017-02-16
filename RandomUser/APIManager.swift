@@ -9,23 +9,16 @@
 import Foundation
 import RealmSwift
 
-fileprivate enum APIManagerError: Error {
-    
-    case NoUsersData
-    
-}
-
 // MARK: - INTERFACE
 
 protocol APIManager {
     
     var config: APIConfig { get }
     var networkManager: NetworkManager { get }
-    //var realm: Realm { get }
+    var realm: Realm { get }
     
     func loadUsers()
     func save(user: User, isNew: Bool, gender: Gender, firstName: String, lastName: String, email: String?, phone: String?)
-
     func getNewUser() -> User
     
 }
@@ -40,7 +33,7 @@ struct APIManagerImpl: APIManager {
     
     // MARK: - INIT
     
-    init(_ config: APIConfig, _ networkManager: NetworkManager, _ realm: Realm) {
+    init(config: APIConfig, networkManager: NetworkManager, realm: Realm) {
         
         self.config = config
         self.networkManager = networkManager
@@ -53,22 +46,33 @@ struct APIManagerImpl: APIManager {
     func loadUsers() {
         
         // loading JSON and saving users data in Realm database
-        
         networkManager.loadJSON(url: config.urlWithParams) { json in
             if json != nil {
                 guard let jsonUsers = json!["results"] else {
-                    printError(APIManagerError.NoUsersData)
+                    print(NetworkDataError.NoUsersData)
                     return
                 }
                 do {
                     let appDelegate = UIApplication.shared.delegate as! AppDelegate
                     let realm = appDelegate.assembler.resolver.resolve(Realm.self)! // new Realm instance for the new thread
                     let users = try [User].decode(jsonUsers)
+
                     try! realm.write {
-                        realm.add(users, update: true)
+                        users.forEach {
+                            
+                            // checking if user exists
+                            var isUpdate: Bool = false
+                            if let existingUser = realm.object(ofType: User.self, forPrimaryKey: $0.username) {
+                                isUpdate = true
+                                $0.snapshots = existingUser.snapshots
+                            }
+                            
+                            realm.add($0, update: isUpdate)
+                            
+                        }
                     }
                 } catch {
-                    printError(error)
+                    print(error)
                 }
             }
         }
@@ -79,19 +83,26 @@ struct APIManagerImpl: APIManager {
     
     func save(user: User, isNew: Bool = false, gender: Gender, firstName: String, lastName: String, email: String? = nil, phone: String? = nil) {
         
+        // save a snapshot of changed user data
+        let snapshot = UserSnapshot(gender: gender.rawValue, username: user.username, firstName: firstName, lastName: lastName, email: email, phone: phone)
+        // compare a snapshot with current user data (before update)
+        let changed: Bool = !(snapshot == user)
+        
         let realm = try! Realm()
-        
         try! realm.write {
-        
-            if isNew {
-                user.username = getUniqueUsername(forFirstName: user.firstName, withLastName: user.lastName)
-            }
-            
+
             user.gender = gender.rawValue
             user.firstName = firstName
             user.lastName = lastName
-            if email != nil { user.email = email }
-            if phone != nil { user.phone = phone }
+            if email != "" { user.email = email } else { user.email = nil }
+            if phone != "" { user.phone = phone } else { user.phone = nil }
+            
+            if isNew {
+                user.username = getUniqueUsername(forFirstName: user.firstName, withLastName: user.lastName)
+            } else if changed {
+                // if any user data changed, add a new snapshot
+                user.snapshots.append(snapshot)
+            }
             
             realm.add(user, update: !isNew)
             
@@ -110,7 +121,6 @@ struct APIManagerImpl: APIManager {
     fileprivate func getUniqueUsername(forFirstName firstName: String, withLastName lastName: String) -> String {
         
         let realm = try! Realm()
-        
         let users = realm.objects(User.self)
         var uniqueUsername = firstName.appending(lastName).lowercased()
         
