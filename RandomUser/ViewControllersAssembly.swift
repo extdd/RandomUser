@@ -21,7 +21,7 @@ class ViewControllersAssembly: Assembly {
             return mainViewController
             }
         
-        // MARK: - MAIN VIEW CONTROLLER
+        // MARK: - DETAIL VIEW CONTROLLER
         
         container.register(DetailViewController.self) { r in
             let detailViewController = DetailViewController()
@@ -29,6 +29,15 @@ class ViewControllersAssembly: Assembly {
             detailViewController.apiManager = r.resolve(APIManager.self)!
             return detailViewController
             }
+        
+        // MARK: - HISTORY VIEW CONTROLLER
+        
+        container.register(HistoryViewController.self) { r in
+            let historyViewController = HistoryViewController()
+            historyViewController.viewModel = r.resolve(HistoryViewModel.self)!
+            historyViewController.apiManager = r.resolve(APIManager.self)!
+            return historyViewController
+        }
         
     }
     

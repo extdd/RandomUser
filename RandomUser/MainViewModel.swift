@@ -32,7 +32,7 @@ struct MainViewModelImpl: MainViewModel {
     var users: Results<User>?
     var navigationBarTitle: String = "Users"
     
-    init(_ apiManager: APIManager) {
+    init(apiManager: APIManager) {
         
         self.apiManager = apiManager
         

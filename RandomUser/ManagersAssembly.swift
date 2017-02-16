@@ -20,7 +20,7 @@ class ManagersAssembly: Assembly {
             }
         
         container.register(APIManager.self) { r in
-            APIManagerImpl(r.resolve(APIConfig.self)!, r.resolve(NetworkManager.self)!, r.resolve(Realm.self)!)
+            APIManagerImpl(config: r.resolve(APIConfig.self)!, networkManager: r.resolve(NetworkManager.self)!, realm: r.resolve(Realm.self)!)
             }.inObjectScope(.container)
         
         // MARK: - NETWORK MANAGER
