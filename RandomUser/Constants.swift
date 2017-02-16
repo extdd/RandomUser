@@ -19,6 +19,18 @@ struct Layout {
     
 }
 
+// FONT
+
+struct Font {
+    
+    static let text = UIFont.systemFont(ofSize: 18, weight: UIFontWeightLight)
+    static let header = UIFont.systemFont(ofSize: 18, weight: UIFontWeightMedium)
+    static let detail = UIFont.systemFont(ofSize: 12, weight: UIFontWeightLight)
+    static let date = UIFont.systemFont(ofSize: 12, weight: UIFontWeightRegular)
+    static let symbol = UIFont.systemFont(ofSize: 26, weight: UIFontWeightRegular)
+    
+}
+
 // COLORS
 
 struct CustomColor {
