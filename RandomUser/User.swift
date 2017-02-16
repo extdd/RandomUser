@@ -9,31 +9,47 @@
 import RealmSwift
 import Decodable
 
-// MARK: - REALM OBJECT
+// MARK: - BASE MODEL FOR USER & USER SNAPSHOT
 
-final class User: Object {
-    
+class UserBase: Object {
+
     dynamic var gender = ""
     dynamic var username = ""
     dynamic var firstName = ""
     dynamic var lastName = ""
     dynamic var email: String? = nil
     dynamic var phone: String? = nil
+    var fullName: String {
+        return "\(firstName) \(lastName)"
+    }
+    
+    override var hashValue: Int {
+        return
+            gender.hashValue ^
+            firstName.hashValue ^
+            lastName.hashValue ^
+            (email?.hashValue ?? "".hashValue) ^
+            (phone?.hashValue ?? "".hashValue)
+    }
+    
+}
+
+func ==(lhs: UserBase, rhs: UserBase) -> Bool {
+    
+    return lhs.hashValue == rhs.hashValue
+    
+}
+
+// MARK: - USER
+
+final class User: UserBase {
+    
     dynamic var pictureURL: String? = nil
     dynamic var thumbnailURL: String? = nil
     
-    var fullName: String {
-        return "\(firstName.capitalized) \(lastName.capitalized)"
-    }
-    
-    convenience init(gender: String,
-                     username: String,
-                     firstName: String,
-                     lastName: String,
-                     email: String? = nil,
-                     phone: String? = nil,
-                     pictureURL: String? = nil,
-                     thumbnailURL:String? = nil) {
+    var snapshots = List<UserSnapshot>()
+
+    convenience init(gender: String, username: String, firstName: String, lastName: String, email: String? = nil, phone: String? = nil, pictureURL: String? = nil, thumbnailURL:String? = nil) {
         
         self.init()
         self.gender = gender
@@ -44,7 +60,7 @@ final class User: Object {
         self.phone = phone
         self.pictureURL = pictureURL
         self.thumbnailURL = thumbnailURL
-        
+ 
     }
     
     override static func primaryKey() -> String? {
