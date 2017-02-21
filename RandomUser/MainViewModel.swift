@@ -14,12 +14,11 @@ import RealmSwift
 protocol MainViewModel {
     
     var apiManager: APIManager { get }
-    
     var users: Results<User>? { get set }
     var navigationBarTitle: String { get set }
     
     mutating func updateUsers(sorted: SortingMode)
-    func getCellLabel(forUser user: User) -> String
+    func getCellText(for user: User) -> String
     
 }
 
@@ -28,7 +27,6 @@ protocol MainViewModel {
 struct MainViewModelImpl: MainViewModel {
     
     let apiManager: APIManager
-    
     var users: Results<User>?
     var navigationBarTitle: String = "Users"
     
@@ -45,7 +43,7 @@ struct MainViewModelImpl: MainViewModel {
         
     }
     
-    func getCellLabel(forUser user: User) -> String {
+    func getCellText(for user: User) -> String {
         
         return "\(user.fullName)"
         

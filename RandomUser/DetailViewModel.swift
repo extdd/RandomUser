@@ -13,15 +13,26 @@ import Foundation
 protocol DetailViewModel {
 
     var activeUser: User? { get set }
-    var navigationBarTitle: String { get set }
+
+    func getTitle(for displayMode: DisplayMode) -> String?
     
 }
 
 // MARK: - IMPLEMENTATION
 
 struct DetailViewModelImpl: DetailViewModel {
-    
+
     var activeUser: User?
-    var navigationBarTitle: String = "User details"
+    
+    func getTitle(for displayMode: DisplayMode) -> String? {
+        switch displayMode {
+        case .show:
+            return "Details"
+        case .edit:
+            return "Edit user"
+        case .add:
+            return "New user"
+        }
+    }
     
 }

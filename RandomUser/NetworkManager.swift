@@ -8,15 +8,6 @@
 
 import Foundation
 
-fileprivate enum NetworkManagerError: Error {
-    
-    case NoData
-    case InvalidData
-    case InvalidJSON
-    case InvalidJSONData
-    
-}
-
 // MARK: - INTERFACE
 
 protocol NetworkManager {
@@ -36,11 +27,13 @@ struct NetworkManagerImpl: NetworkManager {
             if data != nil {
                 do {
                     guard let json = try JSONSerialization.jsonObject(with: data!, options: .allowFragments) as? [String : Any] else {
-                        throw NetworkManagerError.InvalidJSON
+                        print(NetworkDataError.InvalidJSON)
+                        completion(nil)
+                        return
                     }
                     completion(json)
                 } catch {
-                    printError(error)
+                    print(error)
                 }
             }
         }
@@ -55,12 +48,12 @@ struct NetworkManagerImpl: NetworkManager {
         
         let task = session.dataTask(with: urlRequest, completionHandler: { data, response, error in
             guard error == nil else {
-                printError(error!)
+                print(error!)
                 completion(nil)
                 return
             }
             guard data != nil else {
-                printError(NetworkManagerError.NoData)
+                print(NetworkDataError.NoData)
                 completion(nil)
                 return
             }

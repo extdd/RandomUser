@@ -17,26 +17,22 @@ class MainViewController: UIViewController {
     
     var viewModel: MainViewModel?
     var apiManager: APIManager?
-    
-    var sortingBar: SortingBar?
-    var addButton: UIBarButtonItem?
-    var tableView: UITableView?
+    let sortingBar = SortingBar(frame: .zero, withItems: SortingMode.allRaw)
+    let tableView = UITableView(frame: .zero, style: .plain)
     
     fileprivate let disposeBag = DisposeBag()
-    fileprivate var userDefaultThumbnail: UIImage? {
-        return UIImage(named: Images.userDefaultThumbnailName)
-    }
-    
+    fileprivate var addButton: UIBarButtonItem?
+    fileprivate var userDefaultThumbnail: UIImage? = UIImage(named: CustomImage.userDefaultThumbnailName)
+
     // MARK: - INIT
     
     override func viewDidLoad() {
         
-        super.viewDidLoad()
-        
+        super.viewDidLoad() 
         initUI()
         initRX()
         apiManager?.loadUsers()
-        
+
     }
 
     // MARK: - UI
@@ -44,7 +40,6 @@ class MainViewController: UIViewController {
     fileprivate func initUI(){
         
         self.view.backgroundColor = .white
-        
         initNavigationBar()
         initTableView()
         setConstraints()
@@ -53,23 +48,19 @@ class MainViewController: UIViewController {
     
     fileprivate func initNavigationBar() {
         
-        self.title = viewModel?.navigationBarTitle
-        
         addButton = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
         navigationItem.rightBarButtonItems = [addButton!]
-        
-        sortingBar = SortingBar(frame: .zero, withItems: [SortingMode.firstName.rawValue, SortingMode.lastName.rawValue])
-        self.view.addSubview(sortingBar!)
-        
+        self.view.addSubview(sortingBar)
+        self.title = viewModel?.navigationBarTitle
+
     }
     
     fileprivate func initTableView() {
-        
-        tableView = UITableView(frame: .zero, style: .plain)
-        tableView!.register(UITableViewCell.self, forCellReuseIdentifier: UITableViewCell.className)
-        tableView!.backgroundColor = .white
-        self.view.addSubview(tableView!)
-        self.view.sendSubview(toBack: tableView!)
+
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: UITableViewCell.className)
+        tableView.backgroundColor = .white
+        self.view.addSubview(tableView)
+        self.view.sendSubview(toBack: tableView)
 
     }
     
@@ -78,50 +69,50 @@ class MainViewController: UIViewController {
     fileprivate func initRX() {
         
         // addButton
-        addButton?.rx.tap.subscribe(onNext: { [weak self] in
-            self?.showDetail(forNewUser: true)
-        }).addDisposableTo(disposeBag)
+        addButton?.rx.tap
+            .subscribe(onNext: { [unowned self] in
+                self.showDetail(isNewUser: true)
+            }).addDisposableTo(disposeBag)
         
         // sortingBar
-        sortingBar?.segmentedControl.rx.value.subscribe(onNext: { [weak self] value in
-            switch (value) {
-            case 0:
-                self?.viewModel?.updateUsers(sorted: .firstName)
-            case 1:
-                self?.viewModel?.updateUsers(sorted: .lastName)
-            default:
-                return
-            }
-            self?.updateDataSource()
-        }).addDisposableTo(disposeBag)
+        sortingBar.segmentedControl.rx.value
+            .subscribe(onNext: { [unowned self] value in
+                switch (value) {
+                case 0:
+                    self.viewModel?.updateUsers(sorted: .firstName)
+                case 1:
+                    self.viewModel?.updateUsers(sorted: .lastName)
+                default:
+                    return
+                }
+                self.updateDataSource()
+            }).addDisposableTo(disposeBag)
         
         // tableView
-        tableView?.rx.itemSelected.subscribe(onNext: { [weak self] indexPath in
-            self?.showDetail(forRowAt: indexPath)
-        }).addDisposableTo(disposeBag)
+        tableView.rx.itemSelected
+            .subscribe(onNext: { [unowned self] indexPath in
+                self.showDetail(forRowAt: indexPath)
+            }).addDisposableTo(disposeBag)
         
     }
     
     // MARK: - ACTIONS
     
-    fileprivate func showDetail(forRowAt indexPath: IndexPath? = nil, forNewUser new: Bool? = false) {
+    fileprivate func showDetail(forRowAt indexPath: IndexPath? = nil, isNewUser: Bool? = false) {
         
         guard let users = self.viewModel?.users else { return }
-        
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let detailViewController = appDelegate.assembler.resolver.resolve(DetailViewController.self)!
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        guard let detailViewController = appDelegate.assembler.resolver.resolve(DetailViewController.self) else { return }
         
         if indexPath != nil {
-            
+            // show detail for the selected user
             detailViewController.viewModel?.activeUser = users[indexPath!.row]
             self.navigationController?.pushViewController(detailViewController, animated: true)
-            
-        } else if new == true {
-            
+        } else if isNewUser == true {
+            // show detail with edit mode for the new user
             detailViewController.viewModel?.activeUser = apiManager?.getNewUser()
             let navigationController = UINavigationController(rootViewController: detailViewController, customized: true)
             self.present(navigationController, animated: true)
-            
         }
         
     }
@@ -130,12 +121,11 @@ class MainViewController: UIViewController {
     
     func setConstraints() {
         
-        sortingBar?.snp.makeConstraints { make in
+        sortingBar.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)
             make.left.right.equalToSuperview()
         }
-        
-        tableView?.snp.makeConstraints { make in
+        tableView.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)
             make.bottom.left.right.equalTo(view)
         }
@@ -146,18 +136,16 @@ class MainViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         
-        if let indexPath = tableView?.indexPathForSelectedRow {
-            self.tableView?.deselectRow(at: indexPath, animated: false)
-        }
+        guard let indexPath = tableView.indexPathForSelectedRow else { return }
+        self.tableView.deselectRow(at: indexPath, animated: false)
         
     }
     
     override func viewDidLayoutSubviews() {
-        
-        guard sortingBar != nil else { return }
-        let sortingBarHeight = sortingBar!.frame.height
-        tableView?.contentInset.top = sortingBarHeight
-        tableView?.scrollIndicatorInsets.top = sortingBarHeight
+
+        let sortingBarHeight = sortingBar.frame.height
+        tableView.contentInset.top = sortingBarHeight
+        tableView.scrollIndicatorInsets.top = sortingBarHeight
         
     }
     
@@ -168,27 +156,27 @@ class MainViewController: UIViewController {
 extension MainViewController {
     
     fileprivate func updateDataSource() {
-        
-        guard tableView != nil else { return }
-        tableView!.dataSource = nil
-        
+
+        tableView.dataSource = nil
         let dataSource = RxTableViewRealmDataSource<User>(cellIdentifier: UITableViewCell.className, cellType: UITableViewCell.self) {
             [weak self] cell, indexPath, user in
-            self?.updateCell(cell, forUser: user)
+            cell.accessoryType = .disclosureIndicator
+            self?.updateCell(cell, for: user)
         }
-        
         dataSource.animated = false
-        
         if let users = viewModel?.users {
-            Observable.changeset(from: users).bindTo(tableView!.rx.realmChanges(dataSource)).addDisposableTo(disposeBag)
+            Observable.changeset(from: users)
+                .bindTo(tableView.rx.realmChanges(dataSource))
+                .addDisposableTo(disposeBag)
         }
         
     }
     
-    fileprivate func updateCell(_ cell: UITableViewCell, forUser user: User) {
+    fileprivate func updateCell(_ cell: UITableViewCell, for user: User) {
         
-        cell.textLabel?.text = viewModel?.getCellLabel(forUser: user)
-        cell.textLabel?.textColor = UIColor(hex: CustomColor.text)
+        cell.textLabel?.text = viewModel?.getCellText(for: user)
+        cell.textLabel?.textColor = CustomColor.text
+        cell.textLabel?.font = CustomFont.text
         if let thumbnailURL = user.thumbnailURL {
             cell.imageView?.sd_setImage(with: URL(string: thumbnailURL), placeholderImage: userDefaultThumbnail)
         } else {

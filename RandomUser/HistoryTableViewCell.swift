@@ -11,13 +11,14 @@ import SnapKit
 
 class HistoryTableViewCell: UITableViewCell {
     
-    var dateBar = UIView(frame: .zero)
-    var content = UIView(frame: .zero)
-    var dateLabel = UILabel.create(type: .date)
-    var titleLabel = UILabel.create(type: .title)
-    var detailLabel = UILabel.create(type: .detail)
-    var genderLabel = UILabel.create(type: .gender)
+    let dateLabel = UILabel.create(type: .date)
+    let titleLabel = UILabel.create(type: .title)
+    let detailLabel = UILabel.create(type: .detail)
+    let genderLabel = UILabel.create(type: .gender)
     
+    fileprivate let dateBar = UIView(frame: .zero)
+    fileprivate let content = UIView(frame: .zero)
+
     // MARK: - INIT
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
@@ -38,7 +39,7 @@ class HistoryTableViewCell: UITableViewCell {
     
     func initUI() {
         
-        dateBar.backgroundColor = UIColor(hex: CustomColor.violetDark)
+        dateBar.backgroundColor = CustomColor.dark
         dateBar.addSubview(dateLabel)
         content.addSubviews([titleLabel, detailLabel, genderLabel])
         self.addSubviews([dateBar, content])
@@ -50,7 +51,7 @@ class HistoryTableViewCell: UITableViewCell {
     
     func setConstraints() {
         
-        // dateBar
+        // date
         dateBar.snp.makeConstraints { make in
             make.top.left.right.equalTo(self)
         }
@@ -87,12 +88,6 @@ class HistoryTableViewCell: UITableViewCell {
 
 // MARK: - UI LABEL EXTENSION
 
-fileprivate enum LabelType {
-    
-    case date, title, detail, gender
-    
-}
-
 fileprivate extension UILabel {
     
     class func create(type: LabelType) -> UILabel {
@@ -102,18 +97,21 @@ fileprivate extension UILabel {
         
         switch type {
         case .date:
-            font = Font.date
+            font = CustomFont.date
             label.textColor = .white
             label.textAlignment = .center
+            
         case .title:
-            font = Font.header
-            label.textColor = UIColor(hex: CustomColor.text)
+            font = CustomFont.header
+            label.textColor = CustomColor.text
+            
         case .detail:
-            font = Font.detail
-            label.textColor = UIColor(hex: CustomColor.text)
+            font = CustomFont.detail
+            label.textColor = CustomColor.text
             label.numberOfLines = 0
+            
         case .gender:
-            font = Font.symbol
+            font = CustomFont.symbol
             label.textColor = .lightGray
             label.textAlignment = .center
         }

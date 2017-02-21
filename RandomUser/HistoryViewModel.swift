@@ -18,7 +18,6 @@ protocol HistoryViewModel {
     var navigationBarTitle: String { get set }
     
     func getCellTexts(for snapshot: UserSnapshot) -> (date: String, title: String, gender: String, detail: String?)
-    func getGenderLabelColor(for snapshot: UserSnapshot) -> UIColor
     
 }
 
@@ -41,17 +40,6 @@ struct HistoryViewModelImpl: HistoryViewModel {
         detail = detail.trimmingCharacters(in: .newlines)
 
         return (date, title, gender, detail)
-        
-    }
-    
-    func getGenderLabelColor(for snapshot: UserSnapshot) -> UIColor {
-        
-        switch Gender.from(string: snapshot.gender) {
-        case .male:
-            return UIColor(hex: CustomColor.teal)
-        case .female:
-            return UIColor(hex: CustomColor.violet)
-        }
         
     }
     

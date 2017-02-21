@@ -18,28 +18,31 @@ class DetailViewController: UIViewController {
     var viewModel: DetailViewModel?
     var apiManager: APIManager?
     
-    var content: DetailViewContent?
-    var scrollViewContainer: UIView?
-    var scrollView: UIScrollView? // for auto scrolling content when the keyboard appears
-    
-    fileprivate let disposeBag = DisposeBag()
+    fileprivate lazy var content: DetailViewContent = DetailViewContent()
+    fileprivate let scrollViewContainer = UIView(frame: .zero)
+    fileprivate let scrollView = UIScrollView(frame: .zero) // for auto scrolling content when the keyboard appears
     fileprivate var editButton: UIBarButtonItem?
     fileprivate var saveButton: UIBarButtonItem?
     fileprivate var cancelButton: UIBarButtonItem?
     fileprivate var addButton: UIBarButtonItem?
     fileprivate var backButton: UIBarButtonItem?
-    fileprivate var displayMode: DisplayMode? {
+    fileprivate var displayMode: DisplayMode! {
         didSet {
-            updateUI()
+            updateUI(for: displayMode)
+            updateRX(for: displayMode)
         }
     }
     
+    fileprivate let sharedDisposeBag = DisposeBag() // shared for all display modes
+    fileprivate var disposeBag: DisposeBag! = DisposeBag()
+
     // MARK: - INIT
     
     override func viewDidLoad() {
         
         super.viewDidLoad()
         initUI()
+        initRX()
         
     }
     
@@ -47,63 +50,24 @@ class DetailViewController: UIViewController {
     
     fileprivate func initUI(){
         
+        initContent()
         self.automaticallyAdjustsScrollViewInsets = false
         self.view.backgroundColor = .white
-        self.title = viewModel?.navigationBarTitle
-        
-        initNavigationBar()
-        initContent()
-        initRX()
-        
-        if presentingViewController != nil {
-            // view controller is presented (adding new user)
-            displayMode = .add
+        if self.presentingViewController != nil {
+            displayMode = .add // view controller is presented (adding new user)
         } else {
-            // view controller is pushed (showing details)
-            displayMode = .show
+            displayMode = .show // view controller is pushed (showing details)
         }
         
     }
     
-    fileprivate func initNavigationBar() {
+    fileprivate func updateUI(for displayMode: DisplayMode) {
         
-        editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: nil, action: nil)
-        saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: nil, action: nil)
-        cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
-        
-        backButton = UIBarButtonItem(title: "Back", style: .plain, target: nil, action: nil)
-        addButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
-        
-        guard viewModel != nil else { return }
-        self.title = viewModel!.navigationBarTitle
-        
-    }
-    
-    fileprivate func initContent() {
-        
-        // scrollViewContainer
-        scrollViewContainer = UIView(frame: .zero)
-        self.view.addSubview(scrollViewContainer!)
-        scrollViewContainer!.snp.makeConstraints { make in
-            make.top.equalTo(topLayoutGuide.snp.bottom)
-            make.left.right.bottom.equalTo(view) }
-        
-        // scrollView
-        scrollView = UIScrollView(frame: .zero)
-        scrollViewContainer!.addSubview(scrollView!)
-        scrollView!.snp.makeConstraints { make in
-            make.edges.equalTo(scrollViewContainer!)
-            make.size.equalTo(scrollViewContainer!) }
-        
-        // content
-        content = DetailViewContent()
-        scrollView!.addSubview(content!)
-        content!.snp.makeConstraints { make in
-            make.edges.equalTo(scrollView!)
-            make.size.equalTo(scrollViewContainer!) }
-        content!.genderPickerView.delegate = self
-        content!.genderPickerView.dataSource = self
-        content!.initUI()
+        updateNavigationBar(for: displayMode)
+        guard let user = viewModel?.activeUser else { return }
+        content.update(for: displayMode, with: user)
+        content.genderPickerView?.delegate = self
+        content.genderPickerView?.dataSource = self
         
     }
     
@@ -111,92 +75,163 @@ class DetailViewController: UIViewController {
     
     fileprivate func initRX() {
         
-        // keyboard
-        RxKeyboard.instance.visibleHeight.drive(onNext: { [weak self] keyboardVisibleHeight in
-            self?.scrollView?.contentInset.bottom = keyboardVisibleHeight
-        }).addDisposableTo(disposeBag)
+        // shared
+        RxKeyboard.instance.visibleHeight
+            .drive(onNext: { [weak self] keyboardVisibleHeight in
+                self?.scrollView.contentInset.bottom = keyboardVisibleHeight
+            }).addDisposableTo(sharedDisposeBag)
         
-        // navigation bar buttons - show / edit mode
-        editButton?.rx.tap.subscribe(onNext: { [weak self] in
-            self?.displayMode = .edit
-        }).addDisposableTo(disposeBag)
-        
-        saveButton?.rx.tap.subscribe(onNext: { [weak self] in
-            self?.saveActiveUser()
-            self?.displayMode = .show
-        }).addDisposableTo(disposeBag)
-        
-        cancelButton?.rx.tap.subscribe(onNext: { [weak self] in
-            self?.displayMode = .show
-        }).addDisposableTo(disposeBag)
-        
-        // navigation bar buttons - add mode
-        
-        addButton?.rx.tap.subscribe(onNext: { [weak self] in
-            self?.saveActiveUser(isNew: true)
-            self?.dismiss(animated: true)
-        }).addDisposableTo(disposeBag)
-        
-        backButton?.rx.tap.subscribe(onNext: { [weak self] in
-            self?.view.endEditing(true)
-            self?.dismiss(animated: true)
-        }).addDisposableTo(disposeBag)
- 
     }
     
-    // MARK: - SAVE
+    fileprivate func updateRX(for displayMode: DisplayMode) {
+
+        disposeBag = nil // disposing all observables in a previous bag
+        disposeBag = DisposeBag()
+        
+        switch displayMode {
+        // showing details
+        case .show:
+            editButton?.rx.tap
+                .subscribe(onNext: { [unowned self] in
+                    self.displayMode = .edit
+                }).addDisposableTo(disposeBag)
+            
+            content.historyButton?.rx.tap
+                .subscribe(onNext: { [unowned self] in
+                    self.showChangeHistory()
+                }).addDisposableTo(disposeBag)
+       
+        // editing details
+        case .edit:
+            saveButton?.rx.tap
+                .subscribe(onNext: { [unowned self] in
+                    self.saveActiveUser()
+                    self.displayMode = .show
+                }).addDisposableTo(disposeBag)
+            
+            cancelButton?.rx.tap
+                .subscribe(onNext: { [unowned self] in
+                    self.displayMode = .show
+                }).addDisposableTo(disposeBag)
+            
+        // adding new user
+        case .add:
+            addButton?.rx.tap
+                .subscribe(onNext: { [unowned self] in
+                    self.saveActiveUser(isNew: true)
+                    self.dismiss(animated: true)
+                }).addDisposableTo(disposeBag)
+            
+            backButton?.rx.tap
+                .subscribe(onNext: { [unowned self] in
+                    self.view.endEditing(true)
+                    self.dismiss(animated: true)
+                }).addDisposableTo(disposeBag)
+        }
+
+    }
+    
+    // MARK: - ACTIONS
     
     fileprivate func saveActiveUser(isNew: Bool = false) {
         
-        guard content != nil else { return }
-        
         guard let user = viewModel?.activeUser else { return }
-        guard let firstName = content!.firstNameInput.text else { return }
-        guard let lastName = content!.lastNameInput.text else { return }
-        
+        guard let firstName = content.firstNameInput?.text, !firstName.isEmpty else { return }
+        guard let lastName = content.lastNameInput?.text, !lastName.isEmpty else { return }
+        guard let genderPickerView = content.genderPickerView else { return }
+
         apiManager?.save(user: user,
                          isNew: isNew,
-                         gender: Gender.all[content!.genderPickerView.selectedRow(inComponent: 0)],
+                         gender: Gender.all[genderPickerView.selectedRow(inComponent: 0)],
                          firstName: firstName,
                          lastName: lastName,
-                         email: content!.emailInput.text,
-                         phone: content!.phoneInput.text)
+                         email: content.emailInput?.text,
+                         phone: content.phoneInput?.text)
         
     }
     
-    // MARK: - UPDATE UI
-    
-    fileprivate func updateUI() {
-
-        guard displayMode != nil else { return }
+    fileprivate func showChangeHistory() {
         
-        switch displayMode! {
+        guard let user = viewModel?.activeUser else { return }
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        guard let historyViewController = appDelegate.assembler.resolver.resolve(HistoryViewController.self) else { return }
+        
+        historyViewController.viewModel?.snapshots = user.snapshots
+        self.navigationController?.pushViewController(historyViewController, animated: true)
+
+    }
+    
+    // MARK: - NAVIGATION BAR
+
+    fileprivate func updateNavigationBar(for displayMode: DisplayMode) {
+    
+        (editButton, saveButton, cancelButton, backButton, addButton)  = (nil, nil, nil, nil, nil)
+        
+        switch displayMode {
         case .show:
+            editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: nil, action: nil)
             self.navigationItem.leftBarButtonItems = []
             self.navigationItem.rightBarButtonItems = [editButton!]
-            self.view.backgroundColor = .white
+            
         case .edit, .add:
-            self.view.backgroundColor = UIColor(hex: CustomColor.grayLight)
+            self.view.backgroundColor = CustomColor.light
             fallthrough
+            
         case .edit:
             guard displayMode == .edit else { fallthrough }
+            saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: nil, action: nil)
+            cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
             self.navigationItem.leftBarButtonItems = [cancelButton!]
             self.navigationItem.rightBarButtonItems = [saveButton!]
+            
         case .add:
+            backButton = UIBarButtonItem(title: "Back", style: .plain, target: nil, action: nil)
+            addButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
             self.navigationItem.leftBarButtonItems = [backButton!]
             self.navigationItem.rightBarButtonItems = [addButton!]
         }
-
-        guard let user = viewModel?.activeUser else { return }
-        content?.update(forUser: user, displayMode: displayMode!)
+        
+        guard viewModel != nil else { return }
+        self.title = viewModel?.getTitle(for: displayMode)
         
     }
     
+    // MARK: - CONTENT
+    
+    fileprivate func initContent() {
+        
+        content.initUI()
+        scrollView.addSubview(content)
+        scrollViewContainer.addSubview(scrollView)
+        self.view.addSubview(scrollViewContainer)
+        setConstraints()
+        
+    }
+
     fileprivate func updateContentSize() {
         
-        if var contentSize = self.content?.realContentSize { // calculated real content size for proper scrolling (Shared+Ext.swfit)
-            contentSize.height += Layout.margin
-            self.scrollView?.contentSize = contentSize;
+        // calculating real content size for proper scrolling when the keyboard appears
+        var contentSize = self.content.realContentSize
+        contentSize.height += Layout.margin
+        self.scrollView.contentSize = contentSize;
+        
+    }
+    
+    // MARK: - CONSTRAINTS
+    
+    func setConstraints() {
+        
+        scrollViewContainer.snp.makeConstraints { make in
+            make.top.equalTo(topLayoutGuide.snp.bottom)
+            make.left.right.bottom.equalTo(view)
+        }
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalTo(scrollViewContainer)
+            make.size.equalTo(scrollViewContainer)
+        }
+        content.snp.makeConstraints { make in
+            make.edges.equalTo(scrollView)
+            make.size.equalTo(scrollViewContainer)
         }
         
     }
@@ -235,7 +270,7 @@ extension DetailViewController: UIPickerViewDelegate, UIPickerViewDataSource {
     
     func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
         
-        let textColor = UIColor(hex: CustomColor.text)
+        let textColor = CustomColor.text
         let value = Gender.all[row].rawValue
         return NSAttributedString(string: value, attributes: [NSForegroundColorAttributeName:textColor])
         

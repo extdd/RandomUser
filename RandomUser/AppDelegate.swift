@@ -13,16 +13,15 @@ import Swinject
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     let assembler = try! Assembler(assemblies: [ViewControllersAssembly(), ViewModelsAssembly(), ManagersAssembly()])
-    
     var window: UIWindow?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        
-        let rootViewController = assembler.resolver.resolve(MainViewController.self)!
+
+        guard let rootViewController = assembler.resolver.resolve(MainViewController.self) else { return false }
         let navigationController = UINavigationController(rootViewController: rootViewController, customized: true)
         
-        UIBarButtonItem.appearance().tintColor = UIColor(hex: CustomColor.teal)
-        UINavigationBar.appearance().backgroundColor = UIColor(hex: CustomColor.violetDark)
+        UIBarButtonItem.appearance().tintColor = CustomColor.navigationTint
+        UINavigationBar.appearance().backgroundColor = CustomColor.dark
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window!.backgroundColor = UIColor.white

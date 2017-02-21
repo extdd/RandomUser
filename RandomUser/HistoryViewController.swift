@@ -17,9 +17,9 @@ class HistoryViewController: UIViewController {
     
     var viewModel: HistoryViewModel?
     var apiManager: APIManager?
-    var tableView: UITableView?
     
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let tableView = UITableView(frame: .zero, style: .plain)
     
     // MARK: - INIT
     
@@ -42,6 +42,7 @@ class HistoryViewController: UIViewController {
         initNavigationBar()
         initTableView()
         setConstraints()
+        
     }
     
     fileprivate func initNavigationBar() {
@@ -52,15 +53,14 @@ class HistoryViewController: UIViewController {
     
     fileprivate func initTableView() {
         
-        tableView = UITableView(frame: .zero, style: .plain)
-        tableView!.register(HistoryTableViewCell.self, forCellReuseIdentifier: HistoryTableViewCell.className)
-        tableView!.backgroundColor = .white
-        tableView!.allowsSelection = false
-        tableView!.rowHeight = UITableViewAutomaticDimension
-        tableView!.estimatedRowHeight = 60
-        tableView!.separatorStyle = .none
-        self.view.addSubview(tableView!)
-        self.view.sendSubview(toBack: tableView!)
+        tableView.register(HistoryTableViewCell.self, forCellReuseIdentifier: HistoryTableViewCell.className)
+        tableView.backgroundColor = .white
+        tableView.allowsSelection = false
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 60
+        tableView.separatorStyle = .none
+        self.view.addSubview(tableView)
+        self.view.sendSubview(toBack: tableView)
         
     }
 
@@ -69,9 +69,10 @@ class HistoryViewController: UIViewController {
     fileprivate func initRX() {
         
         guard let snapshots = viewModel?.snapshots else { return }
-        
-        Observable.collection(from: snapshots).subscribe(onNext: { [weak self] _ in
-            self?.updateDataSource()
+
+        Observable.collection(from: snapshots)
+            .subscribe(onNext: { [weak self] _ in
+                self?.updateDataSource()
             }).addDisposableTo(disposeBag)
         
     }
@@ -80,10 +81,10 @@ class HistoryViewController: UIViewController {
     
     func setConstraints() {
         
-        tableView?.snp.makeConstraints { make in
+        tableView.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)
             make.bottom.left.right.equalTo(view)
-            }
+        }
         
     }
     
@@ -94,18 +95,16 @@ class HistoryViewController: UIViewController {
 extension HistoryViewController {
     
     fileprivate func updateDataSource() {
-        
-        guard tableView != nil else { return }
-        tableView!.dataSource = nil
-        
+
+        tableView.dataSource = nil
         let dataSource = RxTableViewRealmDataSource<UserSnapshot>(cellIdentifier: HistoryTableViewCell.className, cellType: HistoryTableViewCell.self) {
             [weak self] cell, indexPath, snapshot in
             self?.updateCell(cell, for: snapshot)
         }
-        
+        dataSource.animated = false
         if let snapshots = viewModel?.snapshots {
             Observable.changeset(from: snapshots.sorted(byKeyPath: "timestamp", ascending: false))
-                .bindTo(tableView!.rx.realmChanges(dataSource))
+                .bindTo(tableView.rx.realmChanges(dataSource))
                 .addDisposableTo(disposeBag)
         }
         

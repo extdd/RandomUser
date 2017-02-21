@@ -14,37 +14,24 @@ class SortingBar: UIView {
     let segmentedControl: UISegmentedControl
     let items: [String]
     
-    var body: UIView?
-    var blurView: UIVisualEffectView?
+    fileprivate lazy var body = UIView(frame: .zero)
+    fileprivate lazy var blurView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
     
     // MARK: - INIT
     
     init(frame: CGRect, withItems items: [String]) {
         
         self.items = items
-        
-        // segmentedControl
-        
         segmentedControl = UISegmentedControl(items: items)
         segmentedControl.backgroundColor = UIColor.clear
         segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.tintColor = UIColor(hex: CustomColor.violet)
+        segmentedControl.tintColor = CustomColor.defaultTint
         
         super.init(frame: frame)
+        
+        body.addSubview(blurView)
+        self.addSubview(body)
         self.addSubview(segmentedControl)
-        
-        // body
-        
-        body = UIView(frame: .zero)
-        self.addSubview(body!)
-        self.sendSubview(toBack: body!)
-
-        // blur
-        
-        let blur = UIBlurEffect(style: .light)
-        blurView = UIVisualEffectView(effect: blur)
-        body!.addSubview(blurView!)
-        
         setConstraints()
         
     }
@@ -58,21 +45,17 @@ class SortingBar: UIView {
     // MARK: - CONSTRAINTS
     
     func setConstraints() {
-       
+        
         segmentedControl.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.top.equalToSuperview().offset(Layout.marginSmall)
+            make.bottom.equalToSuperview().inset(Layout.marginSmall)
+            make.centerX.equalToSuperview()
         }
-        
-        body?.snp.makeConstraints { make in
+        body.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
-        blurView?.snp.makeConstraints { make in
+        blurView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-        }
-        
-        self.snp.makeConstraints { make in
-            make.height.equalTo(segmentedControl.snp.height).offset(Layout.margin)
         }
         
     }

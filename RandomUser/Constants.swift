@@ -21,9 +21,10 @@ struct Layout {
 
 // FONT
 
-struct Font {
+struct CustomFont {
     
-    static let text = UIFont.systemFont(ofSize: 18, weight: UIFontWeightLight)
+    static let text = UIFont.systemFont(ofSize: 18, weight: UIFontWeightRegular)
+    static let textLight = UIFont.systemFont(ofSize: 18, weight: UIFontWeightLight)
     static let header = UIFont.systemFont(ofSize: 18, weight: UIFontWeightMedium)
     static let detail = UIFont.systemFont(ofSize: 12, weight: UIFontWeightLight)
     static let date = UIFont.systemFont(ofSize: 12, weight: UIFontWeightRegular)
@@ -31,22 +32,21 @@ struct Font {
     
 }
 
-// COLORS
+// COLOR
 
 struct CustomColor {
     
-    static let teal = 0x20fec0
-    static let violet = 0x5e1fe4
-    static let violetDark = 0x2d2b37
-    static let gray = 0x939294
-    static let grayLight = 0xf8f7f7
-    static let text = 0x2d2b37
-    
+    static let defaultTint = UIColor(hex: 0x5e1fe4)
+    static let navigationTint = UIColor(hex: 0x20fec0)
+    static let text = UIColor(hex: 0x2d2b37)
+    static let dark = UIColor(hex: 0x2d2b37)
+    static let light = UIColor(hex: 0xf8f7f7)
+
 }
 
-// IMAGES
+// IMAGE
 
-struct Images {
+struct CustomImage {
     
     static let userDefaultThumbnailName: String = "UserDefaultThumbnail"
     static let userDefaultPictureName: String = "UserDefaultLarge"
