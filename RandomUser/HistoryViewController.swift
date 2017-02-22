@@ -115,7 +115,7 @@ extension HistoryViewController {
         guard viewModel != nil else { return }
         let texts = viewModel!.getCellTexts(for: snapshot)
         cell.dateLabel.text = texts.date
-        cell.titleLabel.text = texts.title
+        cell.nameLabel.text = texts.name
         cell.detailLabel.text = texts.detail
         cell.genderLabel.text = texts.gender
 

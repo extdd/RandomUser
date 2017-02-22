@@ -12,9 +12,9 @@ import SnapKit
 class HistoryTableViewCell: UITableViewCell {
     
     let dateLabel = UILabel.create(type: .date)
-    let titleLabel = UILabel.create(type: .title)
+    let nameLabel = UILabel.create(type: .text)
     let detailLabel = UILabel.create(type: .detail)
-    let genderLabel = UILabel.create(type: .gender)
+    let genderLabel = UILabel.create(type: .symbol)
     
     fileprivate let dateBar = UIView(frame: .zero)
     fileprivate let content = UIView(frame: .zero)
@@ -41,7 +41,7 @@ class HistoryTableViewCell: UITableViewCell {
         
         dateBar.backgroundColor = CustomColor.dark
         dateBar.addSubview(dateLabel)
-        content.addSubviews([titleLabel, detailLabel, genderLabel])
+        content.addSubviews([nameLabel, detailLabel, genderLabel])
         self.addSubviews([dateBar, content])
         setConstraints()
         
@@ -66,15 +66,15 @@ class HistoryTableViewCell: UITableViewCell {
             make.top.equalTo(dateBar.snp.bottom)
             make.left.right.bottom.equalToSuperview()
         }
-        titleLabel.snp.makeConstraints { make in
+        nameLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(Layout.marginSmall)
             make.left.equalToSuperview().offset(Layout.margin)
             make.right.lessThanOrEqualTo(genderLabel.snp.left).offset(-Layout.marginSmall)
         }
         detailLabel.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(Layout.marginExtraSmall)
-            make.left.equalTo(titleLabel)
-            make.right.equalTo(titleLabel)
+            make.top.equalTo(nameLabel.snp.bottom).offset(Layout.marginExtraSmall)
+            make.left.equalTo(nameLabel)
+            make.right.equalTo(nameLabel)
             make.bottom.equalToSuperview().inset(Layout.marginSmall)
         }
         genderLabel.snp.makeConstraints { make in
@@ -85,41 +85,3 @@ class HistoryTableViewCell: UITableViewCell {
     }
     
 }
-
-// MARK: - UI LABEL EXTENSION
-
-fileprivate extension UILabel {
-    
-    class func create(type: LabelType) -> UILabel {
-        
-        let label = UILabel(frame: .zero)
-        var font: UIFont
-        
-        switch type {
-        case .date:
-            font = CustomFont.date
-            label.textColor = .white
-            label.textAlignment = .center
-            
-        case .title:
-            font = CustomFont.header
-            label.textColor = CustomColor.text
-            
-        case .detail:
-            font = CustomFont.detail
-            label.textColor = CustomColor.text
-            label.numberOfLines = 0
-            
-        case .gender:
-            font = CustomFont.symbol
-            label.textColor = .lightGray
-            label.textAlignment = .center
-        }
-        
-        label.font = font
-        return label
-        
-    }
-    
-}
-

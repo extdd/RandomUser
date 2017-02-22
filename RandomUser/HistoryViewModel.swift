@@ -10,6 +10,8 @@
 import Foundation
 import RealmSwift
 
+typealias HistoryTableViewCellData = (date: String, name: String, gender: String, detail: String?)
+
 // MARK: - INTERFACE
 
 protocol HistoryViewModel {
@@ -17,7 +19,7 @@ protocol HistoryViewModel {
     var snapshots: List<UserSnapshot>? { get set }
     var navigationBarTitle: String { get set }
     
-    func getCellTexts(for snapshot: UserSnapshot) -> (date: String, title: String, gender: String, detail: String?)
+    func getCellTexts(for snapshot: UserSnapshot) -> HistoryTableViewCellData
     
 }
 
@@ -28,7 +30,7 @@ struct HistoryViewModelImpl: HistoryViewModel {
     var snapshots: List<UserSnapshot>?
     var navigationBarTitle: String = "Change history"
     
-    func getCellTexts(for snapshot: UserSnapshot) -> (date: String, title: String, gender: String, detail: String?) {
+    func getCellTexts(for snapshot: UserSnapshot) -> HistoryTableViewCellData {
         
         let date = snapshot.formattedDate
         let title = snapshot.fullName
