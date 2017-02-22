@@ -57,7 +57,15 @@ enum DisplayMode {
 
 enum LabelType {
     
-    case date, title, detail, gender
+    case text, header, detail, date, symbol, validationInfo
+    
+}
+
+// MARK: - TEXT TYPE
+
+enum TextFormatType {
+    
+    case email, phone
     
 }
 

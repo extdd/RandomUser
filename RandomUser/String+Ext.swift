@@ -12,6 +12,37 @@ import Foundation
 
 extension String {
     
+    func checkFormat(for type: TextFormatType) -> Bool {
+        
+        switch type {
+        case .email:
+            let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+            let range = NSRange(location: 0, length: self.characters.count)
+            let result = detector?.firstMatch(in: self, options: .reportCompletion, range: range)
+            return result?.url?.scheme == "mailto" && result?.range.length == self.characters.count
+            
+        default:
+            return false
+        }
+        
+    }
+    
+    func formatted(to type: TextFormatType) -> String? {
+        
+        switch type {
+        case .phone:
+            let phoneCharacters = NSMutableCharacterSet(charactersIn: "*+#")
+            phoneCharacters.formUnion(with: NSCharacterSet.decimalDigits)
+            let phone = self.components(separatedBy: phoneCharacters.inverted).joined()
+            if phone.characters.count > 0 { return phone }
+            else { return nil }
+ 
+        default:
+            return nil
+        }
+        
+    }
+    
     // adding new number or incrementing the existing at the end of string
     
     mutating func addNumber() {

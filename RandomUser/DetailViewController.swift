@@ -78,7 +78,7 @@ class DetailViewController: UIViewController {
         // shared
         RxKeyboard.instance.visibleHeight
             .drive(onNext: { [weak self] keyboardVisibleHeight in
-                self?.scrollView.contentInset.bottom = keyboardVisibleHeight
+                self?.scrollView.contentInset.bottom = keyboardVisibleHeight + Layout.keyboardTopInset
             }).addDisposableTo(sharedDisposeBag)
         
     }
@@ -100,9 +100,68 @@ class DetailViewController: UIViewController {
                 .subscribe(onNext: { [unowned self] in
                     self.showChangeHistory()
                 }).addDisposableTo(disposeBag)
-       
+            
+        // form validation (in both modes)
+        case .edit, .add:
+            
+            // control events
+            content.firstNameInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
+                .subscribe(onNext: { [unowned self] in
+                    self.content.lastNameInput?.becomeFirstResponder()
+                }).addDisposableTo(disposeBag)
+            
+            content.lastNameInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
+                .subscribe(onNext: { [unowned self] in
+                    self.content.emailInput?.becomeFirstResponder()
+                }).addDisposableTo(disposeBag)
+            
+            content.emailInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
+                .subscribe(onNext: { [unowned self] in
+                    self.content.phoneInput?.becomeFirstResponder()
+                }).addDisposableTo(disposeBag)
+            
+            // binding
+            content.firstNameInput?.rx.text
+                .asObservable()
+                .bindTo(viewModel!.firstName)
+                .addDisposableTo(disposeBag)
+            
+            content.lastNameInput?.rx.text
+                .asObservable()
+                .bindTo(viewModel!.lastName)
+                .addDisposableTo(disposeBag)
+            
+            content.emailInput?.rx.text
+                .asObservable()
+                .bindTo(viewModel!.email)
+                .addDisposableTo(disposeBag)
+            
+            content.phoneInput?.rx.text
+                .asObservable()
+                .bindTo(viewModel!.phone)
+                .addDisposableTo(disposeBag)
+            
+            //validation
+            viewModel?.emailValidation.asObservable()
+                .subscribe(onNext: { [unowned self] in
+                    self.content.emailValidationInfo?.isHidden = $0
+                }).addDisposableTo(disposeBag)
+            
+            viewModel?.phoneValidation.asObservable()
+                .subscribe(onNext: { [unowned self] in
+                    self.content.phoneValidationInfo?.isHidden = $0
+                }).addDisposableTo(disposeBag)
+            
+            viewModel?.saveValidation.asObservable()
+                .subscribe(onNext: { [unowned self] in
+                    self.saveButton?.isEnabled = $0
+                }).addDisposableTo(disposeBag)
+            
+            fallthrough
+            
         // editing details
         case .edit:
+            guard displayMode == .edit else { fallthrough }
             saveButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
                     self.saveActiveUser()

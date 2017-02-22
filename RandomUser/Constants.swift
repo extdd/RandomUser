@@ -16,6 +16,7 @@ struct Layout {
     static let margin: CGFloat = 16
     static let marginSmall: CGFloat = 8
     static let marginExtraSmall: CGFloat = 4
+    static let keyboardTopInset: CGFloat = 32 // extra space between keyboard & selected textfield
     
 }
 
@@ -24,11 +25,11 @@ struct Layout {
 struct CustomFont {
     
     static let text = UIFont.systemFont(ofSize: 18, weight: UIFontWeightRegular)
-    static let textLight = UIFont.systemFont(ofSize: 18, weight: UIFontWeightLight)
     static let header = UIFont.systemFont(ofSize: 18, weight: UIFontWeightMedium)
     static let detail = UIFont.systemFont(ofSize: 12, weight: UIFontWeightLight)
     static let date = UIFont.systemFont(ofSize: 12, weight: UIFontWeightRegular)
     static let symbol = UIFont.systemFont(ofSize: 26, weight: UIFontWeightRegular)
+    static let validationInfo = UIFont.systemFont(ofSize: 12, weight: UIFontWeightRegular)
     
 }
 

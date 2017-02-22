@@ -23,7 +23,9 @@ class DetailViewContent: UIView {
     var firstNameInput: UITextField?
     var lastNameInput: UITextField?
     var emailInput: UITextField?
+    var emailValidationInfo: UILabel?
     var phoneInput: UITextField?
+    var phoneValidationInfo: UILabel?
     var genderPickerView: UIPickerView?
     var historyButton: UIButton?
     
@@ -34,10 +36,10 @@ class DetailViewContent: UIView {
     // private UI controls & views
 
     fileprivate lazy var userDefaultPicture: UIImage? = UIImage(named: CustomImage.userDefaultPictureName)
-    fileprivate lazy var nameHeader: UILabel = UILabel.create(text: "Name:", header: true)
-    fileprivate lazy var genderHeader: UILabel = UILabel.create(text: "Gender:", header: true)
-    fileprivate lazy var emailHeader: UILabel = UILabel.create(text: "E-mail:", header: true)
-    fileprivate lazy var phoneHeader: UILabel = UILabel.create(text: "Phone:", header: true)
+    fileprivate lazy var nameHeader: UILabel = UILabel.create(text: "Name:", type: .header)
+    fileprivate lazy var genderHeader: UILabel = UILabel.create(text: "Gender:", type: .header)
+    fileprivate lazy var emailHeader: UILabel = UILabel.create(text: "Email:", type: .header)
+    fileprivate lazy var phoneHeader: UILabel = UILabel.create(text: "Phone:", type: .header)
     
     fileprivate var nameValue: UILabel?
     fileprivate var genderValue: UILabel?
@@ -77,24 +79,49 @@ class DetailViewContent: UIView {
             historyButton!.setTitleColor(.white, for: .normal)
             historyButton!.titleLabel?.font = CustomFont.text
             historyButton!.backgroundColor = CustomColor.defaultTint
-            self.addSubviews([nameValue!, genderValue!, emailValue!, phoneValue!, historyButton!])
+            // adding subviews
+            self.addSubviews([
+                nameValue!,
+                genderValue!,
+                emailValue!,
+                phoneValue!,
+                historyButton!
+                ])
             
         case .edit, .add:
             // creating inputs
             firstNameInput = UITextField.create(placeholder: "First name", capitalized: true)
             lastNameInput = UITextField.create(placeholder: "Last name", capitalized: true)
-            emailInput = UITextField.create(placeholder: "E-mail address", capitalized: true, keyboard: .emailAddress)
-            phoneInput = UITextField.create(placeholder: "Phone number", capitalized: true, keyboard: .namePhonePad)
+            emailInput = UITextField.create(placeholder: "Email address", capitalized: true, keyboard: .emailAddress)
+            phoneInput = UITextField.create(placeholder: "Phone number", capitalized: true, keyboard: .phonePad)
+            // setting return key type
+            firstNameInput!.returnKeyType = .next
+            lastNameInput!.returnKeyType = .next
+            emailInput!.returnKeyType = .next
+            // creating validation labels
+            emailValidationInfo = UILabel.create(text: "Enter a valid email address", type: .validationInfo)
+            phoneValidationInfo = UILabel.create(text: "Enter a valid phone number", type: .validationInfo)
             // creating gender picker
             genderPickerView = UIPickerView(frame: .zero)
             genderPickerView!.backgroundColor = .white
             genderPickerView!.showsSelectionIndicator = true
             genderPickerView!.selectRow(Gender.from(string: user.gender).hashValue, inComponent: 0, animated: false)
-            self.addSubviews([firstNameInput!, lastNameInput!, emailInput!, phoneInput!, genderPickerView!])
+            // adding subviews
+            self.addSubviews([
+                firstNameInput!,
+                lastNameInput!,
+                emailInput!,
+                emailValidationInfo!,
+                phoneInput!,
+                phoneValidationInfo!,
+                genderPickerView!
+                ])
+            
             fallthrough
             
         case .edit:
             guard displayMode == .edit else { fallthrough }
+            // setting current values
             firstNameInput!.text = user.firstName
             lastNameInput!.text = user.lastName
             emailInput!.text = user.email
@@ -111,14 +138,14 @@ class DetailViewContent: UIView {
     // MARK: - CONSTRAINTS
     
     func updateConstraints(for displayMode: DisplayMode) {
-
+        
         // picture
         pictureImageView.snp.remakeConstraints { make in
             make.top.equalTo(snp.topMargin)
             make.left.equalTo(snp.leftMargin)
             make.width.height.equalTo(snp.width).multipliedBy(0.3)
         }
-        
+
         // name header
         nameHeader.snp.remakeConstraints { make in
             make.top.equalToSuperview().offset(Layout.margin)
@@ -186,7 +213,9 @@ class DetailViewContent: UIView {
                 let lastNameInput = lastNameInput,
                 let genderPickerView = genderPickerView,
                 let emailInput = emailInput,
-                let phoneInput = phoneInput
+                let emailValidationInfo = emailValidationInfo,
+                let phoneInput = phoneInput,
+                let phoneValidationInfo = phoneValidationInfo
                 else { return }
             
             // name
@@ -215,13 +244,21 @@ class DetailViewContent: UIView {
                 make.top.equalTo(emailHeader.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(emailHeader)
             }
+            emailValidationInfo.snp.remakeConstraints { make in
+                make.top.equalTo(emailInput.snp.bottom).offset(Layout.marginSmall)
+                make.left.right.equalTo(genderHeader)
+            }
             phoneHeader.snp.remakeConstraints { make in
-                make.top.equalTo(emailInput.snp.bottom).offset(Layout.margin)
+                make.top.equalTo(emailValidationInfo.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(genderHeader)
             }
             phoneInput.snp.remakeConstraints { make in
                 make.top.equalTo(phoneHeader.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(phoneHeader)
+            }
+            phoneValidationInfo.snp.remakeConstraints { make in
+                make.top.equalTo(phoneInput.snp.bottom).offset(Layout.marginSmall)
+                make.left.right.equalTo(genderHeader)
             }
         }
     
@@ -241,49 +278,19 @@ class DetailViewContent: UIView {
             $0.removeFromSuperview()
         })
         
-        (nameValue, genderValue, phoneValue, emailValue, historyButton) = (nil, nil, nil, nil, nil)
-        (firstNameInput, lastNameInput, genderPickerView, emailInput, phoneInput) = (nil, nil, nil, nil, nil)
+        nameValue = nil
+        genderValue = nil
+        phoneValue = nil
+        emailValue = nil
+        historyButton = nil
         
-    }
-    
-}
-
-// MARK: - UI CONTROLS EXTENSIONS
-
-fileprivate extension UILabel {
-    
-    class func create(text: String? = nil, header: Bool = false) -> UILabel {
-        
-        let label = UILabel(frame: .zero)
-        
-        if text != nil { label.text = text }
-        if header { label.font = CustomFont.header }
-        else { label.font = CustomFont.text }
-        
-        label.textColor = CustomColor.text
-        label.sizeToFit()
-        return label
-        
-    }
-    
-}
-
-fileprivate extension UITextField {
-    
-    class func create(text: String? = nil, placeholder: String? = nil, capitalized: Bool? = false, keyboard: UIKeyboardType? = nil) -> UITextField {
-        
-        let field = UITextField(frame: .zero)
-        
-        if text != nil { field.text = text }
-        if placeholder != nil { field.placeholder = placeholder }
-        if capitalized == true { field.autocapitalizationType = .sentences }
-        if keyboard != nil { field.keyboardType = keyboard! }
-        
-        field.textColor = CustomColor.text
-        field.borderStyle = .roundedRect
-        field.clearButtonMode = .whileEditing
-        field.sizeToFit()
-        return field
+        firstNameInput = nil
+        lastNameInput = nil
+        genderPickerView = nil
+        emailInput = nil
+        emailValidationInfo = nil
+        phoneInput = nil
+        phoneValidationInfo = nil
         
     }
     

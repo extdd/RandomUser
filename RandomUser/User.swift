@@ -49,7 +49,7 @@ final class User: UserBase {
     
     var snapshots = List<UserSnapshot>()
 
-    convenience init(gender: String, username: String, firstName: String, lastName: String, email: String? = nil, phone: String? = nil, pictureURL: String? = nil, thumbnailURL:String? = nil) {
+    convenience init(gender: String, username: String, firstName: String, lastName: String, email: String? = nil, phone: String? = nil, pictureURL: String? = nil, thumbnailURL: String? = nil) {
         
         self.init()
         self.gender = gender
@@ -57,10 +57,10 @@ final class User: UserBase {
         self.firstName = firstName.capitalized
         self.lastName = lastName.capitalized
         self.email = email
-        self.phone = phone
+        self.phone = phone?.formatted(to: .phone)
         self.pictureURL = pictureURL
         self.thumbnailURL = thumbnailURL
- 
+        
     }
     
     override static func primaryKey() -> String? {
