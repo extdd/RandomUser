@@ -18,9 +18,9 @@ extension UITextField {
         let field = UITextField(frame: .zero)
         if text != nil { field.text = text }
         if placeholder != nil { field.placeholder = placeholder }
-        if capitalized == true { field.autocapitalizationType = .sentences }
+        if capitalized == true { field.autocapitalizationType = .sentences } else { field.autocapitalizationType = .none }
         if keyboard != nil { field.keyboardType = keyboard! }
-        
+
         field.textColor = CustomColor.text
         field.borderStyle = .roundedRect
         field.clearButtonMode = .whileEditing
