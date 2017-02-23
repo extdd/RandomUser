@@ -51,6 +51,9 @@ final class User: UserBase {
 
     convenience init(gender: String, username: String, firstName: String, lastName: String, email: String? = nil, phone: String? = nil, pictureURL: String? = nil, thumbnailURL: String? = nil) {
         
+        let email = (email ?? "").isEmpty ? nil : email
+        let phone = (phone ?? "").isEmpty ? nil : phone
+        
         self.init()
         self.gender = gender
         self.username = username
@@ -82,10 +85,10 @@ extension User: Decodable {
             username: json => "login" => "username",
             firstName: json => "name" => "first",
             lastName: json => "name" => "last",
-            email: json => "email",
-            phone: json => "phone",
-            pictureURL: json => "picture" => "large",
-            thumbnailURL: json => "picture" => "thumbnail"
+            email: json =>? "email",
+            phone: json =>? "phone",
+            pictureURL: json =>? "picture" => "large",
+            thumbnailURL: json =>? "picture" => "thumbnail"
         )
         
     }

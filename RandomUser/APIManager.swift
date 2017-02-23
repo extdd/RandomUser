@@ -94,8 +94,8 @@ struct APIManagerImpl: APIManager {
             user.gender = gender.rawValue
             user.firstName = firstName
             user.lastName = lastName
-            if email != "" { user.email = email } else { user.email = nil }
-            if phone != "" { user.phone = phone } else { user.phone = nil }
+            user.email = (email ?? "").isEmpty ? nil : email
+            user.phone = (phone ?? "").isEmpty ? nil : phone
             
             if isNew {
                 user.username = getUniqueUsername(forFirstName: user.firstName, withLastName: user.lastName)
