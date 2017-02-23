@@ -19,6 +19,7 @@ protocol MainViewModel {
     
     mutating func updateUsers(sorted: SortingMode)
     func getCellText(for user: User) -> String
+    func getSortingBarItems() -> [String]?
     
 }
 
@@ -46,6 +47,19 @@ struct MainViewModelImpl: MainViewModel {
     func getCellText(for user: User) -> String {
         
         return "\(user.fullName)"
+        
+    }
+    
+    func getSortingBarItems() -> [String]? {
+        
+        return SortingMode.all.map { mode -> String in
+            switch mode {
+            case .firstName:
+                return "First name"
+            case .lastName:
+                return "Last name"
+            }
+        }
         
     }
     

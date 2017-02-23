@@ -17,10 +17,10 @@ class MainViewController: UIViewController {
     
     var viewModel: MainViewModel?
     var apiManager: APIManager?
-    let sortingBar = SortingBar(frame: .zero, withItems: SortingMode.allRaw)
-    let tableView = UITableView(frame: .zero, style: .plain)
-    
+
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let tableView = UITableView(frame: .zero, style: .plain)
+    fileprivate var sortingBar: SortingBar?
     fileprivate var addButton: UIBarButtonItem?
     fileprivate var userDefaultThumbnail: UIImage? = UIImage(named: CustomImage.userDefaultThumbnailName)
 
@@ -49,8 +49,9 @@ class MainViewController: UIViewController {
     fileprivate func initNavigationBar() {
         
         addButton = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
+        sortingBar = SortingBar(frame: .zero, withItems: self.viewModel?.getSortingBarItems())
         navigationItem.rightBarButtonItems = [addButton!]
-        self.view.addSubview(sortingBar)
+        self.view.addSubview(sortingBar!)
         self.title = viewModel?.navigationBarTitle
 
     }
@@ -67,7 +68,7 @@ class MainViewController: UIViewController {
     // MARK: - RX
     
     fileprivate func initRX() {
-        
+
         // addButton
         addButton?.rx.tap
             .subscribe(onNext: { [unowned self] in
@@ -75,16 +76,9 @@ class MainViewController: UIViewController {
             }).addDisposableTo(disposeBag)
         
         // sortingBar
-        sortingBar.segmentedControl.rx.value
+        sortingBar?.segmentedControl.rx.value
             .subscribe(onNext: { [unowned self] value in
-                switch (value) {
-                case 0:
-                    self.viewModel?.updateUsers(sorted: .firstName)
-                case 1:
-                    self.viewModel?.updateUsers(sorted: .lastName)
-                default:
-                    return
-                }
+                self.viewModel?.updateUsers(sorted: SortingMode.all[value])
                 self.updateDataSource()
             }).addDisposableTo(disposeBag)
         
@@ -121,7 +115,7 @@ class MainViewController: UIViewController {
     
     func setConstraints() {
         
-        sortingBar.snp.makeConstraints { make in
+        sortingBar?.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)
             make.left.right.equalToSuperview()
         }
@@ -143,7 +137,7 @@ class MainViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
 
-        let sortingBarHeight = sortingBar.frame.height
+        guard let sortingBarHeight = sortingBar?.frame.height else { return }
         tableView.contentInset.top = sortingBarHeight
         tableView.scrollIndicatorInsets.top = sortingBarHeight
         

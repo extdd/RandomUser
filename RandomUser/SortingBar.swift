@@ -12,14 +12,14 @@ import SnapKit
 class SortingBar: UIView {
     
     let segmentedControl: UISegmentedControl
-    let items: [String]
+    let items: [String]?
     
     fileprivate lazy var body = UIView(frame: .zero)
     fileprivate lazy var blurView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
     
     // MARK: - INIT
     
-    init(frame: CGRect, withItems items: [String]) {
+    init(frame: CGRect, withItems items: [String]?) {
         
         self.items = items
         segmentedControl = UISegmentedControl(items: items)
