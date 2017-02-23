@@ -38,62 +38,68 @@ class DetailViewContent: UIView {
     fileprivate lazy var userDefaultPicture: UIImage? = UIImage(named: CustomImage.userDefaultPictureName)
     fileprivate lazy var nameHeader: UILabel = UILabel.create(text: "Name:", type: .header)
     fileprivate lazy var genderHeader: UILabel = UILabel.create(text: "Gender:", type: .header)
-    fileprivate lazy var emailHeader: UILabel = UILabel.create(text: "Email:", type: .header)
-    fileprivate lazy var phoneHeader: UILabel = UILabel.create(text: "Phone:", type: .header)
     
     fileprivate var nameValue: UILabel?
     fileprivate var genderValue: UILabel?
+    fileprivate var emailHeader: UILabel?
     fileprivate var emailValue: UILabel?
+    fileprivate var phoneHeader: UILabel?
     fileprivate var phoneValue: UILabel?
     
     // MARK: - INIT
     
     func initUI() {
         
-        constantSubviews = [pictureImageView, nameHeader, genderHeader, emailHeader, phoneHeader]
+        constantSubviews = [pictureImageView, nameHeader, genderHeader]
         self.addSubviews(constantSubviews)
         self.layoutMargins = UIEdgeInsets(all: Layout.margin)
         
     }
     
     // MARK: - UPDATE UI
-    
+
     func update(for displayMode: DisplayMode, with user: User) {
         
         clear()
         
+        // setting picture
         if let pictureURL = user.pictureURL {
             pictureImageView.sd_setImage(with: URL(string: pictureURL), placeholderImage: userDefaultPicture)
         }
+
+        // creating optional headers
+        if user.email != nil || displayMode != .show { emailHeader = UILabel.create(text: "Email:", type: .header) }
+        if user.phone != nil || displayMode != .show { phoneHeader = UILabel.create(text: "Phone:", type: .header) }
+        self.addSubviews([emailHeader, phoneHeader])
         
         switch (displayMode) {
         case .show:
             // creating labels
             nameValue = UILabel.create(text: user.fullName)
             genderValue = UILabel.create(text: user.gender)
-            emailValue = UILabel.create(text: user.email)
-            phoneValue = UILabel.create(text: user.phone)
+            if user.email != nil { emailValue = UILabel.create(text: user.email) }
+            if user.phone != nil { phoneValue = UILabel.create(text: user.phone) }
             // creating history button
             historyButton = UIButton(type: UIButtonType.system)
             historyButton!.setTitle("Change history", for: .normal)
             historyButton!.setTitleColor(.white, for: .normal)
             historyButton!.titleLabel?.font = CustomFont.text
             historyButton!.backgroundColor = CustomColor.defaultTint
-            // adding subviews
+            // adding subviews to the view
             self.addSubviews([
-                nameValue!,
-                genderValue!,
-                emailValue!,
-                phoneValue!,
-                historyButton!
+                nameValue,
+                genderValue,
+                emailValue,
+                phoneValue,
+                historyButton
                 ])
             
         case .edit, .add:
             // creating inputs
             firstNameInput = UITextField.create(placeholder: "First name", capitalized: true)
             lastNameInput = UITextField.create(placeholder: "Last name", capitalized: true)
-            emailInput = UITextField.create(placeholder: "Email address", capitalized: true, keyboard: .emailAddress)
-            phoneInput = UITextField.create(placeholder: "Phone number", capitalized: true, keyboard: .phonePad)
+            emailInput = UITextField.create(placeholder: "Email address", keyboard: .emailAddress)
+            phoneInput = UITextField.create(placeholder: "Phone number", keyboard: .phonePad)
             // setting return key type
             firstNameInput!.returnKeyType = .next
             lastNameInput!.returnKeyType = .next
@@ -106,7 +112,7 @@ class DetailViewContent: UIView {
             genderPickerView!.backgroundColor = .white
             genderPickerView!.showsSelectionIndicator = true
             genderPickerView!.selectRow(Gender.from(string: user.gender).hashValue, inComponent: 0, animated: false)
-            // adding subviews
+            // adding subviews to the view
             self.addSubviews([
                 firstNameInput!,
                 lastNameInput!,
@@ -121,13 +127,14 @@ class DetailViewContent: UIView {
             
         case .edit:
             guard displayMode == .edit else { fallthrough }
-            // setting current values
+            // setting current values to the inputs
             firstNameInput!.text = user.firstName
             lastNameInput!.text = user.lastName
             emailInput!.text = user.email
             phoneInput!.text = user.phone
             
         case .add:
+            // setting auto focus to the first input
             firstNameInput!.becomeFirstResponder()
         }
         
@@ -165,8 +172,6 @@ class DetailViewContent: UIView {
             guard
                 let nameValue = nameValue,
                 let genderValue = genderValue,
-                let emailValue = emailValue,
-                let phoneValue = phoneValue,
                 let historyButton = historyButton
                 else { return }
             
@@ -182,28 +187,46 @@ class DetailViewContent: UIView {
                 make.left.right.equalTo(genderHeader)
             }
             
-            // contact
-            emailHeader.snp.remakeConstraints { make in
+            // email
+            emailHeader?.snp.remakeConstraints { make in
                 make.top.equalTo(genderValue.snp.bottom).offset(Layout.margin)
                 make.left.right.equalTo(genderValue)
             }
-            emailValue.snp.remakeConstraints { make in
-                make.top.equalTo(emailHeader.snp.bottom).offset(Layout.marginExtraSmall)
-                make.left.right.equalTo(emailHeader)
+            
+            emailValue?.snp.remakeConstraints { make in
+                guard emailHeader != nil else { return }
+                make.top.equalTo(emailHeader!.snp.bottom).offset(Layout.marginExtraSmall)
+                make.left.right.equalTo(emailHeader!)
             }
-            phoneHeader.snp.remakeConstraints { make in
-                make.top.equalTo(emailValue.snp.bottom).offset(Layout.margin)
+            
+            // phone
+            phoneHeader?.snp.remakeConstraints { make in
+                let top = make.top
+                if emailValue != nil {
+                    top.equalTo(emailValue!.snp.bottom).offset(Layout.margin)
+                } else {
+                    top.equalTo(genderValue.snp.bottom).offset(Layout.margin)
+                }
                 make.left.right.equalTo(genderHeader)
             }
-            phoneValue.snp.remakeConstraints { make in
-                make.top.equalTo(phoneHeader.snp.bottom).offset(Layout.marginExtraSmall)
-                make.left.right.equalTo(phoneHeader)
+            
+            phoneValue?.snp.remakeConstraints { make in
+                guard phoneHeader != nil else { return }
+                make.top.equalTo(phoneHeader!.snp.bottom).offset(Layout.marginExtraSmall)
+                make.left.right.equalTo(phoneHeader!)
             }
             
             // history button
             historyButton.snp.remakeConstraints { make in
-                make.top.equalTo(phoneValue.snp.bottom).offset(Layout.margin)
-                make.left.right.equalTo(phoneHeader)
+                let top = make.top
+                if phoneValue != nil {
+                    top.equalTo(phoneValue!.snp.bottom).offset(Layout.margin)
+                } else if emailValue != nil {
+                    top.equalTo(emailValue!.snp.bottom).offset(Layout.margin)
+                } else {
+                    top.equalTo(genderValue.snp.bottom).offset(Layout.margin)
+                }
+                make.left.right.equalTo(genderHeader)
                 make.height.equalTo(40)
             }
             
@@ -212,8 +235,10 @@ class DetailViewContent: UIView {
                 let firstNameInput = firstNameInput,
                 let lastNameInput = lastNameInput,
                 let genderPickerView = genderPickerView,
+                let emailHeader = emailHeader,
                 let emailInput = emailInput,
                 let emailValidationInfo = emailValidationInfo,
+                let phoneHeader = phoneHeader,
                 let phoneInput = phoneInput,
                 let phoneValidationInfo = phoneValidationInfo
                 else { return }
@@ -235,7 +260,7 @@ class DetailViewContent: UIView {
                 make.height.equalTo(100)
             }
             
-            // contact
+            // email
             emailHeader.snp.remakeConstraints { make in
                 make.top.equalTo(genderPickerView.snp.bottom).offset(Layout.margin)
                 make.left.right.equalTo(genderHeader)
@@ -248,6 +273,8 @@ class DetailViewContent: UIView {
                 make.top.equalTo(emailInput.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(genderHeader)
             }
+            
+            // phone
             phoneHeader.snp.remakeConstraints { make in
                 make.top.equalTo(emailValidationInfo.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(genderHeader)
@@ -280,8 +307,10 @@ class DetailViewContent: UIView {
         
         nameValue = nil
         genderValue = nil
-        phoneValue = nil
+        emailHeader = nil
         emailValue = nil
+        phoneHeader = nil
+        phoneValue = nil
         historyButton = nil
         
         firstNameInput = nil
