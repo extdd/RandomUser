@@ -19,14 +19,14 @@ protocol MainViewModel {
     var sortingBarItems: [String]? { get }
     var preloaderInfo: PreloaderInfo { get }
     
-    mutating func updateUsers(sorted: SortingMode)
+    func updateUsers(sorted: SortingMode)
     func getCellText(for user: User) -> String
     
 }
 
 // MARK: - IMPLEMENTATION
 
-struct MainViewModelImpl: MainViewModel {
+class MainViewModelImpl: MainViewModel {
     
     let apiManager: APIManager
     var users: Results<User>?
@@ -54,7 +54,7 @@ struct MainViewModelImpl: MainViewModel {
     
     // MARK: - UPDATE
     
-    mutating func updateUsers(sorted: SortingMode) {
+    func updateUsers(sorted: SortingMode) {
         
         let realm = try! Realm()
         users = realm.objects(User.self).sorted(byKeyPath: sorted.rawValue)
