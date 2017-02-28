@@ -21,17 +21,19 @@ class MainViewController: UIViewController {
     fileprivate let disposeBag = DisposeBag()
     fileprivate let tableView = UITableView(frame: .zero, style: .plain)
     fileprivate var sortingBar: SortingBar?
+    fileprivate var preloader: Preloader?
     fileprivate var addButton: UIBarButtonItem?
     fileprivate var userDefaultThumbnail: UIImage? = UIImage(named: CustomImage.userDefaultThumbnailName)
-
+    
     // MARK: - INIT
     
     override func viewDidLoad() {
         
-        super.viewDidLoad() 
+        super.viewDidLoad()
+        
         initUI()
         initRX()
-        apiManager?.loadUsers()
+        refresh()
 
     }
 
@@ -49,7 +51,7 @@ class MainViewController: UIViewController {
     fileprivate func initNavigationBar() {
         
         addButton = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
-        sortingBar = SortingBar(frame: .zero, withItems: self.viewModel?.getSortingBarItems())
+        sortingBar = SortingBar(frame: .zero, withItems: self.viewModel?.sortingBarItems)
         navigationItem.rightBarButtonItems = [addButton!]
         self.view.addSubview(sortingBar!)
         self.title = viewModel?.navigationBarTitle
@@ -63,6 +65,23 @@ class MainViewController: UIViewController {
         self.view.addSubview(tableView)
         self.view.sendSubview(toBack: tableView)
 
+    }
+    
+    
+    fileprivate func setPreloader(_ visible: Bool, withInfo info: PreloaderInfo? = nil) {
+        
+        addButton?.isEnabled = !visible
+        
+        guard visible || preloader == nil else {
+            preloader?.snp.removeConstraints()
+            preloader?.removeFromSuperview()
+            preloader = nil
+            return
+        }
+        
+        preloader = Preloader(info: info, snapToSuperview: true)
+        self.view.addSubview(preloader!)
+        
     }
     
     // MARK: - RX
@@ -91,6 +110,20 @@ class MainViewController: UIViewController {
     }
     
     // MARK: - ACTIONS
+    
+    fileprivate func refresh() {
+        
+        setPreloader(true, withInfo: viewModel?.preloaderInfo)
+        
+        apiManager?.loadUsers()
+            .asObservable()
+            .subscribe(onError: { [weak self] _ in
+                    self?.setPreloader(false)
+                }, onCompleted: { [weak self] in
+                    self?.setPreloader(false)
+            }).addDisposableTo(disposeBag)
+        
+    }
     
     fileprivate func showDetail(forRowAt indexPath: IndexPath? = nil, isNewUser: Bool? = false) {
         
@@ -158,12 +191,12 @@ extension MainViewController {
             self?.updateCell(cell, for: user)
         }
         dataSource.animated = false
-        if let users = viewModel?.users {
-            Observable.changeset(from: users)
-                .bindTo(tableView.rx.realmChanges(dataSource))
-                .addDisposableTo(disposeBag)
-        }
-        
+
+        guard let users = viewModel?.users else { return }
+        Observable.changeset(from: users)
+            .bindTo(tableView.rx.realmChanges(dataSource))
+            .addDisposableTo(disposeBag)
+
     }
     
     fileprivate func updateCell(_ cell: UITableViewCell, for user: User) {

@@ -16,10 +16,11 @@ protocol MainViewModel {
     var apiManager: APIManager { get }
     var users: Results<User>? { get set }
     var navigationBarTitle: String { get set }
+    var sortingBarItems: [String]? { get }
+    var preloaderInfo: PreloaderInfo { get }
     
     mutating func updateUsers(sorted: SortingMode)
     func getCellText(for user: User) -> String
-    func getSortingBarItems() -> [String]?
     
 }
 
@@ -30,12 +31,28 @@ struct MainViewModelImpl: MainViewModel {
     let apiManager: APIManager
     var users: Results<User>?
     var navigationBarTitle: String = "Users"
+    var sortingBarItems: [String]? {
+        return SortingMode.all.map { mode -> String in
+            switch mode {
+            case .firstName: return "First name"
+            case .lastName: return "Last name"
+            }
+        }
+    }
+    var preloaderInfo: PreloaderInfo {
+        if let users = users, users.count > 0 { return .refreshing }
+        else { return .loading }
+    }
+    
+    // MARK: - INIT
     
     init(apiManager: APIManager) {
         
         self.apiManager = apiManager
         
     }
+    
+    // MARK: - UPDATE
     
     mutating func updateUsers(sorted: SortingMode) {
         
@@ -44,22 +61,11 @@ struct MainViewModelImpl: MainViewModel {
         
     }
     
+    // MARK: - UI
+    
     func getCellText(for user: User) -> String {
         
         return "\(user.fullName)"
-        
-    }
-    
-    func getSortingBarItems() -> [String]? {
-        
-        return SortingMode.all.map { mode -> String in
-            switch mode {
-            case .firstName:
-                return "First name"
-            case .lastName:
-                return "Last name"
-            }
-        }
         
     }
     
