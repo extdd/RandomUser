@@ -13,7 +13,7 @@ class HistoryTableViewCell: UITableViewCell {
     
     let dateLabel = UILabel.create(type: .date)
     let nameLabel = UILabel.create(type: .text)
-    let detailLabel = UILabel.create(type: .detail)
+    let detailLabel = UILabel.create(type: .detail, lines: 0)
     let genderLabel = UILabel.create(type: .symbol)
     
     fileprivate let dateBar = UIView(frame: .zero)

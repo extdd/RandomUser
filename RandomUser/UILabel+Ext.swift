@@ -33,8 +33,7 @@ extension UILabel {
         case .detail:
             font = CustomFont.detail
             color = CustomColor.text
-            label.numberOfLines = 0
-            
+
         case .date:
             font = CustomFont.date
             color = .white
