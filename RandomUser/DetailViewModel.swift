@@ -20,6 +20,7 @@ protocol DetailViewModel {
     var lastName: Variable<String?> { get }
     var email: Variable<String?> { get }
     var phone: Variable<String?> { get }
+    var gender: Variable<Gender?> { get }
     
     var saveValidation: Observable<Bool> { get set }
     var emailValidation: Observable<Bool> { get set }
@@ -33,26 +34,30 @@ protocol DetailViewModel {
 
 class DetailViewModelImpl: DetailViewModel {
 
-    var activeUser: User?
+    var activeUser: User? {
+        didSet {
+            guard activeUser != nil else { return }
+            gender.value = Gender.from(string: activeUser!.gender)
+        }
+    }
     
     let firstName = Variable<String?>(nil)
     let lastName = Variable<String?>(nil)
     let email = Variable<String?>(nil)
     let phone = Variable<String?>(nil)
+    let gender = Variable<Gender?>(nil)
     
-    // save validation
-
+    // MARK: - RX
+    
     lazy var saveValidation: Observable<Bool> = { [unowned self] in
         return Observable
             .combineLatest(self.firstNameValidation,
                            self.lastNameValidation,
                            self.emailValidation,
                            self.phoneValidation) {
-                $0 && $1 && $2 && $3
+                            $0 && $1 && $2 && $3
             }.distinctUntilChanged()
     }()
-    
-    // email validation
     
     lazy var emailValidation: Observable<Bool> = {
         return self.email
@@ -60,23 +65,23 @@ class DetailViewModelImpl: DetailViewModel {
             .filterNil()
             .map {
                 // check is empty or valid
-                return $0.characters.count == 0 || $0.checkFormat(for: .email)
+                $0.characters.count == 0 || $0.checkFormat(for: .email)
             }.distinctUntilChanged()
+            .shareReplay(1)
     }()
-    
-    // phone validation
-    
+
     lazy var phoneValidation: Observable<Bool> = {
         return self.phone
             .asObservable()
             .filterNil()
             .map {
                 // check is empty or valid
-                return $0.characters.count == 0 || $0.characters.count >= 9
+                $0.characters.count == 0 || $0.characters.count >= 9
             }.distinctUntilChanged()
+            .shareReplay(1)
     }()
     
-    // firstName validation
+    // private
     
     fileprivate lazy var firstNameValidation: Observable<Bool> = {
         return self.firstName
@@ -87,9 +92,7 @@ class DetailViewModelImpl: DetailViewModel {
                 !$0.isEmpty
             }.distinctUntilChanged()
     }()
-    
-    // lastName validation
-    
+
     fileprivate lazy var lastNameValidation: Observable<Bool> = {
         return self.lastName
             .asObservable()
@@ -100,7 +103,7 @@ class DetailViewModelImpl: DetailViewModel {
             }.distinctUntilChanged()
     }()
     
-    // title
+    // MARK: - UI
     
     func getTitle(for displayMode: DisplayMode) -> String? {
         switch displayMode {

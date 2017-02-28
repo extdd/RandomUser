@@ -140,7 +140,13 @@ class DetailViewController: UIViewController {
                 .asObservable()
                 .bindTo(viewModel!.phone)
                 .addDisposableTo(disposeBag)
-            
+
+            content.genderPickerView?.rx.itemSelected
+                .map {
+                    return Gender.all[$0.0]
+                }.bindTo(viewModel!.gender)
+                .addDisposableTo(disposeBag)
+
             // validation
             viewModel?.emailValidation.asObservable()
                 .subscribe(onNext: { [unowned self] in
@@ -197,17 +203,17 @@ class DetailViewController: UIViewController {
     fileprivate func saveActiveUser(isNew: Bool = false) {
         
         guard let user = viewModel?.activeUser else { return }
-        guard let firstName = content.firstNameInput?.text, !firstName.isEmpty else { return }
-        guard let lastName = content.lastNameInput?.text, !lastName.isEmpty else { return }
-        guard let genderPickerView = content.genderPickerView else { return }
+        guard let firstName = viewModel?.firstName.value else { return }
+        guard let lastName = viewModel?.lastName.value else { return }
+        guard let gender = viewModel?.gender.value else { return }
 
         apiManager?.save(user: user,
                          isNew: isNew,
-                         gender: Gender.all[genderPickerView.selectedRow(inComponent: 0)],
+                         gender: gender,
                          firstName: firstName,
                          lastName: lastName,
-                         email: content.emailInput?.text,
-                         phone: content.phoneInput?.text)
+                         email: viewModel?.email.value,
+                         phone: viewModel?.phone.value)
         
     }
     
