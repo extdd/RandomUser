@@ -8,14 +8,17 @@ target 'RandomUser' do
   # Pods for RandomUser
 
   pod 'RealmSwift'
-  pod 'RxRealm'
-  pod 'RxRealmDataSources'
   pod 'RxSwift',            '~> 3.0'
   pod 'RxCocoa',            '~> 3.0'
+  pod 'RxRealm'
+  pod 'RxOptional'
+  pod 'RxRealmDataSources'
+  pod 'RxDataSources',      '~> 1.0'
+  pod 'RxKeyboard',         '~> 0.4'
   pod 'Decodable',          '~> 0.5'
   pod 'SDWebImage',         '~> 3.8'
   pod 'SnapKit',            '~> 3.1.2'
-  pod 'Swinject',           '~> 2.0.0-beta.3'
+  pod 'Swinject',           '~> 2.0.0'
 
 end
 
