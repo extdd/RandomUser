@@ -109,9 +109,9 @@ class DetailViewContent: UIView {
             phoneValidationInfo = UILabel.create(text: "Enter a valid phone number", type: .validationInfo)
             // creating gender picker
             genderPickerView = UIPickerView(frame: .zero)
-            genderPickerView?.backgroundColor = .white
-            genderPickerView?.showsSelectionIndicator = true
-            genderPickerView?.selectRow(0, inComponent: 0, animated: false)
+            genderPickerView!.backgroundColor = .white
+            genderPickerView!.showsSelectionIndicator = true
+            genderPickerView!.selectRow(0, inComponent: 0, animated: false)
             // adding subviews to the view
             self.addSubviews([
                 firstNameInput!,

@@ -23,7 +23,12 @@ class UserSnapshot: UserBase {
         return formatter.string(from: date)
     }
 
-    convenience init(gender: String, username: String, firstName: String, lastName: String, email: String? = nil, phone: String? = nil) {
+    convenience init(gender: String,
+                     username: String,
+                     firstName: String,
+                     lastName: String,
+                     email: String? = nil,
+                     phone: String? = nil) {
         
         self.init()
         self.timestamp = Int(Date().timeIntervalSince1970)

@@ -49,8 +49,16 @@ final class User: UserBase {
     
     var snapshots = List<UserSnapshot>()
 
-    convenience init(gender: String, username: String, firstName: String, lastName: String, email: String? = nil, phone: String? = nil, pictureURL: String? = nil, thumbnailURL: String? = nil) {
+    convenience init(gender: String,
+                     username: String,
+                     firstName: String,
+                     lastName: String,
+                     email: String? = nil,
+                     phone: String? = nil,
+                     pictureURL: String? = nil,
+                     thumbnailURL: String? = nil) {
         
+        // make sure decoded data is not empty string
         let email = (email ?? "").isEmpty ? nil : email
         let phone = (phone ?? "").isEmpty ? nil : phone
         
