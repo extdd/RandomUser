@@ -22,6 +22,7 @@ class MainViewController: UIViewController {
     fileprivate let tableView = UITableView(frame: .zero, style: .plain)
     fileprivate var sortingBar: SortingBar?
     fileprivate var preloader: Preloader?
+    fileprivate var refreshButton: UIBarButtonItem?
     fileprivate var addButton: UIBarButtonItem?
     fileprivate var userDefaultThumbnail: UIImage? = UIImage(named: CustomImage.userDefaultThumbnailName)
     
@@ -50,8 +51,10 @@ class MainViewController: UIViewController {
     
     fileprivate func initNavigationBar() {
         
+        refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: nil, action: nil)
         addButton = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
         sortingBar = SortingBar(frame: .zero, withItems: self.viewModel?.sortingBarItems)
+        navigationItem.leftBarButtonItems = [refreshButton!]
         navigationItem.rightBarButtonItems = [addButton!]
         self.view.addSubview(sortingBar!)
         self.title = viewModel?.navigationBarTitle
@@ -70,6 +73,7 @@ class MainViewController: UIViewController {
     
     fileprivate func setPreloader(_ visible: Bool, withInfo info: PreloaderInfo? = nil) {
         
+        refreshButton?.isEnabled = !visible
         addButton?.isEnabled = !visible
         
         guard visible || preloader == nil else {
@@ -88,6 +92,12 @@ class MainViewController: UIViewController {
     
     fileprivate func initRX() {
 
+        // refreshButton
+        refreshButton?.rx.tap
+            .subscribe(onNext: { [unowned self] in
+                self.refresh()
+            }).addDisposableTo(disposeBag)
+        
         // addButton
         addButton?.rx.tap
             .subscribe(onNext: { [unowned self] in
