@@ -8,6 +8,7 @@
 
 import Foundation
 import RealmSwift
+import RxSwift
 
 // MARK: - INTERFACE
 
@@ -17,7 +18,7 @@ protocol APIManager {
     var networkManager: NetworkManager { get }
     var realm: Realm { get }
     
-    func loadUsers()
+    func loadUsers() -> Observable<[User]>
     func save(user: User, isNew: Bool, gender: Gender, firstName: String, lastName: String, email: String?, phone: String?)
     func getNewUser() -> User
     
@@ -42,40 +43,42 @@ struct APIManagerImpl: APIManager {
     }
     
     // MARK: - LOAD
-    
-    func loadUsers() {
-        
-        // loading JSON and saving users data in Realm database
-        networkManager.loadJSON(url: config.urlWithParams) { json in
-            if json != nil {
-                guard let jsonUsers = json!["results"] else {
-                    print(NetworkDataError.NoUsersData)
-                    return
-                }
-                do {
-                    let appDelegate = UIApplication.shared.delegate as! AppDelegate
-                    let realm = appDelegate.assembler.resolver.resolve(Realm.self)! // new Realm instance for the new thread
-                    let users = try [User].decode(jsonUsers)
 
-                    try! realm.write {
-                        users.forEach {
-                            
-                            // checking if user exists
-                            var isUpdate: Bool = false
-                            if let existingUser = realm.object(ofType: User.self, forPrimaryKey: $0.username) {
-                                isUpdate = true
-                                $0.snapshots = existingUser.snapshots
-                            }
-                            
-                            realm.add($0, update: isUpdate)
-                            
-                        }
-                    }
-                } catch {
-                    print(error)
+    func loadUsers() -> Observable<[User]> {
+        
+        return networkManager.loadData(url: config.urlWithParams)
+            .map { data -> [User] in
+
+                guard let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String : Any] else {
+                    throw(NetworkDataError.InvalidJSON)
                 }
+                
+                guard let results = json["results"] as? [Any] else {
+                    throw(NetworkDataError.NoUsersData)
+                }
+                
+                let users = try [User].decode(results)
+                return users
+
             }
-        }
+        
+            .do(onNext: { users in
+                
+                let appDelegate = UIApplication.shared.delegate as! AppDelegate
+                let realm = appDelegate.assembler.resolver.resolve(Realm.self) // new Realm instance for the new thread
+                try realm?.write {
+                    users.forEach {
+                        // checking if user exists
+                        var isUpdate: Bool = false
+                        if let existingUser = realm?.object(ofType: User.self, forPrimaryKey: $0.username) {
+                            isUpdate = true
+                            $0.snapshots = existingUser.snapshots
+                        }
+                        realm?.add($0, update: isUpdate)
+                    }
+                }
+                
+            }).observeOn(MainScheduler.instance)
         
     }
 
