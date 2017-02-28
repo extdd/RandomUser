@@ -14,9 +14,11 @@ import UIKit
 struct Layout {
     
     static let margin: CGFloat = 16
+    static let marginMedium: CGFloat = 12
     static let marginSmall: CGFloat = 8
     static let marginExtraSmall: CGFloat = 4
     static let keyboardTopInset: CGFloat = 32 // extra space between keyboard & selected textfield
+    static let buttonHeight: CGFloat = 44
     
 }
 
@@ -42,6 +44,7 @@ struct CustomColor {
     static let text = UIColor(hex: 0x2d2b37)
     static let dark = UIColor(hex: 0x2d2b37)
     static let light = UIColor(hex: 0xf8f7f7)
+    static let gray = UIColor(hex: 0x595959)
 
 }
 

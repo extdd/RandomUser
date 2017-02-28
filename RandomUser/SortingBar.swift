@@ -15,7 +15,7 @@ class SortingBar: UIView {
     let items: [String]?
     
     fileprivate lazy var body = UIView(frame: .zero)
-    fileprivate lazy var blurView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
+    fileprivate lazy var blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     
     // MARK: - INIT
     
@@ -25,7 +25,7 @@ class SortingBar: UIView {
         segmentedControl = UISegmentedControl(items: items)
         segmentedControl.backgroundColor = UIColor.clear
         segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.tintColor = CustomColor.defaultTint
+        segmentedControl.tintColor = .white
         
         super.init(frame: frame)
         
@@ -47,8 +47,8 @@ class SortingBar: UIView {
     func setConstraints() {
         
         segmentedControl.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(Layout.marginSmall)
-            make.bottom.equalToSuperview().inset(Layout.marginSmall)
+            make.top.equalToSuperview().offset(Layout.marginMedium)
+            make.bottom.equalToSuperview().inset(Layout.marginMedium)
             make.centerX.equalToSuperview()
         }
         body.snp.makeConstraints { make in

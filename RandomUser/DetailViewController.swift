@@ -25,7 +25,6 @@ class DetailViewController: UIViewController {
     fileprivate var saveButton: UIBarButtonItem?
     fileprivate var cancelButton: UIBarButtonItem?
     fileprivate var addButton: UIBarButtonItem?
-    fileprivate var backButton: UIBarButtonItem?
     fileprivate var displayMode: DisplayMode! {
         didSet {
             updateUI(for: displayMode)
@@ -68,6 +67,7 @@ class DetailViewController: UIViewController {
         content.update(for: displayMode, with: user)
         content.genderPickerView?.delegate = self
         content.genderPickerView?.dataSource = self
+        content.genderPickerView?.selectRow(Gender.from(string: user.gender).hashValue, inComponent: 0, animated: false)
         
     }
     
@@ -87,10 +87,11 @@ class DetailViewController: UIViewController {
 
         disposeBag = nil // disposing all observables in a previous bag
         disposeBag = DisposeBag()
-        
+
         switch displayMode {
         // showing details
         case .show:
+            // tap events
             editButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
                     self.displayMode = .edit
@@ -103,8 +104,7 @@ class DetailViewController: UIViewController {
             
         // form validation (in both modes)
         case .edit, .add:
-            
-            // control events
+            // edit events
             content.firstNameInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
                 .subscribe(onNext: { [unowned self] in
                     self.content.lastNameInput?.becomeFirstResponder()
@@ -141,7 +141,7 @@ class DetailViewController: UIViewController {
                 .bindTo(viewModel!.phone)
                 .addDisposableTo(disposeBag)
             
-            //validation
+            // validation
             viewModel?.emailValidation.asObservable()
                 .subscribe(onNext: { [unowned self] in
                     self.content.emailValidationInfo?.isHidden = $0
@@ -162,6 +162,7 @@ class DetailViewController: UIViewController {
         // editing details
         case .edit:
             guard displayMode == .edit else { fallthrough }
+             // tap events
             saveButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
                     self.saveActiveUser()
@@ -175,13 +176,14 @@ class DetailViewController: UIViewController {
             
         // adding new user
         case .add:
+             // tap events
             addButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
                     self.saveActiveUser(isNew: true)
                     self.dismiss(animated: true)
                 }).addDisposableTo(disposeBag)
             
-            backButton?.rx.tap
+            cancelButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
                     self.view.endEditing(true)
                     self.dismiss(animated: true)
@@ -224,7 +226,7 @@ class DetailViewController: UIViewController {
 
     fileprivate func updateNavigationBar(for displayMode: DisplayMode) {
     
-        (editButton, saveButton, cancelButton, backButton, addButton)  = (nil, nil, nil, nil, nil)
+        (editButton, saveButton, cancelButton, addButton)  = (nil, nil, nil, nil)
         
         switch displayMode {
         case .show:
@@ -234,19 +236,17 @@ class DetailViewController: UIViewController {
             
         case .edit, .add:
             self.view.backgroundColor = CustomColor.light
+            cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
+            self.navigationItem.leftBarButtonItems = [cancelButton!]
             fallthrough
             
         case .edit:
             guard displayMode == .edit else { fallthrough }
             saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: nil, action: nil)
-            cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
-            self.navigationItem.leftBarButtonItems = [cancelButton!]
             self.navigationItem.rightBarButtonItems = [saveButton!]
             
         case .add:
-            backButton = UIBarButtonItem(title: "Back", style: .plain, target: nil, action: nil)
             addButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
-            self.navigationItem.leftBarButtonItems = [backButton!]
             self.navigationItem.rightBarButtonItems = [addButton!]
         }
         

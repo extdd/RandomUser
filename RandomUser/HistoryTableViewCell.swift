@@ -39,7 +39,7 @@ class HistoryTableViewCell: UITableViewCell {
     
     func initUI() {
         
-        dateBar.backgroundColor = CustomColor.dark
+        dateBar.backgroundColor = CustomColor.gray
         dateBar.addSubview(dateLabel)
         content.addSubviews([nameLabel, detailLabel, genderLabel])
         self.addSubviews([dateBar, content])

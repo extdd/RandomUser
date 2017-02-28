@@ -18,11 +18,11 @@ enum PreloaderInfo: String {
 
 class Preloader: UIView {
     
+    fileprivate let body = UIView(frame: .zero)
+    fileprivate let indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
+    fileprivate var label: UILabel?
     fileprivate var info: PreloaderInfo?
     fileprivate var snapToSuperview: Bool = false
-    fileprivate let indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
-    fileprivate let label = UILabel(frame: .zero)
-    fileprivate let body = UIView(frame: .zero)
     
     // MARK: - INIT
     
@@ -52,14 +52,17 @@ class Preloader: UIView {
     fileprivate func initUI() {
         
         indicator.startAnimating()
-        label.font = CustomFont.text
-        label.textAlignment = .center
-        label.textColor = .white
-        label.text = info?.rawValue
         body.backgroundColor = .black
         body.alpha = 0.8
+        self.addSubviews([body, indicator])
         
-        self.addSubviews([body, indicator, label])
+        if info != nil {
+            label = UILabel.create(type: .text, align: .center)
+            label!.text = info?.rawValue
+            label!.textColor = .white
+            self.addSubview(label!)
+        }
+        
         setConstraints()
         
     }
@@ -68,17 +71,15 @@ class Preloader: UIView {
     
     fileprivate func setConstraints() {
         
+        body.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         indicator.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
-        
-        label.snp.makeConstraints { make in
+        label?.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.top.equalTo(indicator.snp.bottom).offset(Layout.margin)
-        }
-        
-        body.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
         }
         
     }

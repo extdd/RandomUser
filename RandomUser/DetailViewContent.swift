@@ -75,7 +75,7 @@ class DetailViewContent: UIView {
         switch (displayMode) {
         case .show:
             // creating labels
-            nameValue = UILabel.create(text: user.fullName)
+            nameValue = UILabel.create(text: user.fullName, lines: 2)
             genderValue = UILabel.create(text: user.gender)
             if user.email != nil { emailValue = UILabel.create(text: user.email) }
             if user.phone != nil { phoneValue = UILabel.create(text: user.phone) }
@@ -109,9 +109,9 @@ class DetailViewContent: UIView {
             phoneValidationInfo = UILabel.create(text: "Enter a valid phone number", type: .validationInfo)
             // creating gender picker
             genderPickerView = UIPickerView(frame: .zero)
-            genderPickerView!.backgroundColor = .white
-            genderPickerView!.showsSelectionIndicator = true
-            genderPickerView!.selectRow(Gender.from(string: user.gender).hashValue, inComponent: 0, animated: false)
+            genderPickerView?.backgroundColor = .white
+            genderPickerView?.showsSelectionIndicator = true
+            genderPickerView?.selectRow(0, inComponent: 0, animated: false)
             // adding subviews to the view
             self.addSubviews([
                 firstNameInput!,
@@ -227,7 +227,7 @@ class DetailViewContent: UIView {
                     top.equalTo(genderValue.snp.bottom).offset(Layout.margin)
                 }
                 make.left.right.equalTo(genderHeader)
-                make.height.equalTo(40)
+                make.height.equalTo(Layout.buttonHeight)
             }
             
         case .edit, .add:

@@ -13,14 +13,14 @@ extension UILabel {
     
     // quick creating custom label
     
-    class func create(text: String? = nil, type: LabelType = .text) -> UILabel {
+    class func create(text: String? = nil, type: LabelType = .text, align: NSTextAlignment = .left, lines: Int = 1) -> UILabel {
         
         let label = UILabel(frame: .zero)
         var font: UIFont
         var color: UIColor
         
         if text != nil { label.text = text }
-        
+
         switch type {
         case .text:
             font = CustomFont.text
@@ -41,7 +41,7 @@ extension UILabel {
    
         case .symbol:
             font = CustomFont.symbol
-            color = .lightGray
+            color = CustomColor.gray
             label.textAlignment = .center
 
         case .validationInfo:
@@ -52,6 +52,8 @@ extension UILabel {
         
         label.font = font
         label.textColor = color
+        label.textAlignment = align
+        label.numberOfLines = lines
         label.sizeToFit()
         return label
             
