@@ -47,4 +47,20 @@ class UserSnapshot: UserBase {
         
     }
     
+    static func add(for user: User, in realm: Realm) {
+        
+        let snapshot = UserSnapshot(gender: user.gender,
+                                    username: user.username,
+                                    firstName: user.firstName,
+                                    lastName: user.lastName,
+                                    email: user.email,
+                                    phone: user.phone)
+
+        guard let snapshots = realm.object(ofType: User.self, forPrimaryKey: user.username)?.snapshots else { return }
+        if let lastSnapshot = snapshots.last, snapshot == lastSnapshot { return } // return if no changes detected
+
+        user.snapshots.append(snapshot)
+        
+    }
+    
 }

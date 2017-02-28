@@ -65,16 +65,16 @@ struct APIManagerImpl: APIManager {
             .do(onNext: { users in
                 
                 let appDelegate = UIApplication.shared.delegate as! AppDelegate
-                let realm = appDelegate.assembler.resolver.resolve(Realm.self) // new Realm instance for the new thread
-                try realm?.write {
+                guard let realm = appDelegate.assembler.resolver.resolve(Realm.self) else { return } // new Realm instance for the new thread
+                try realm.write {
                     users.forEach {
-                        // checking if user exists
                         var isUpdate: Bool = false
-                        if let existingUser = realm?.object(ofType: User.self, forPrimaryKey: $0.username) {
+                        if let existingUser = realm.object(ofType: User.self, forPrimaryKey: $0.username) { // checking if user exists
                             isUpdate = true
                             $0.snapshots = existingUser.snapshots
                         }
-                        realm?.add($0, update: isUpdate)
+                        realm.add($0, update: isUpdate)
+                        UserSnapshot.add(for: $0, in: realm)
                     }
                 }
                 
@@ -86,10 +86,7 @@ struct APIManagerImpl: APIManager {
     
     func save(user: User, isNew: Bool = false, gender: Gender, firstName: String, lastName: String, email: String? = nil, phone: String? = nil) {
         
-        // save a snapshot of changed user data
-        let snapshot = UserSnapshot(gender: gender.rawValue, username: user.username, firstName: firstName, lastName: lastName, email: email, phone: phone)
-        // compare a snapshot with current user data (before update)
-        let changed: Bool = !(snapshot == user)
+        guard !firstName.isEmpty && !lastName.isEmpty else { return }
         
         let realm = try! Realm()
         try! realm.write {
@@ -102,13 +99,10 @@ struct APIManagerImpl: APIManager {
             
             if isNew {
                 user.username = getUniqueUsername(forFirstName: user.firstName, withLastName: user.lastName)
-            } else if changed {
-                // if any user data changed, add a new snapshot
-                user.snapshots.append(snapshot)
             }
-            
+
             realm.add(user, update: !isNew)
-            
+            UserSnapshot.add(for: user, in: realm)
         }
  
     }
@@ -127,7 +121,7 @@ struct APIManagerImpl: APIManager {
         let users = realm.objects(User.self)
         var uniqueUsername = firstName.appending(lastName).lowercased()
         
-        // checking username exists in Realm database
+        // checking if username exists in Realm database
         var isExists: Bool = true
         existsLoop: while isExists {
             
