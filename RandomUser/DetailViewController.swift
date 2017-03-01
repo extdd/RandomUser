@@ -24,7 +24,6 @@ class DetailViewController: UIViewController {
     fileprivate var editButton: UIBarButtonItem?
     fileprivate var saveButton: UIBarButtonItem?
     fileprivate var cancelButton: UIBarButtonItem?
-    fileprivate var addButton: UIBarButtonItem?
     fileprivate var displayMode: DisplayMode! {
         didSet {
             updateUI(for: displayMode)
@@ -183,7 +182,7 @@ class DetailViewController: UIViewController {
         // adding new user
         case .add:
              // tap events
-            addButton?.rx.tap
+            saveButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
                     self.saveActiveUser(isNew: true)
                     self.dismiss(animated: true)
@@ -232,7 +231,7 @@ class DetailViewController: UIViewController {
 
     fileprivate func updateNavigationBar(for displayMode: DisplayMode) {
     
-        (editButton, saveButton, cancelButton, addButton)  = (nil, nil, nil, nil)
+        (editButton, saveButton, cancelButton)  = (nil, nil, nil)
         
         switch displayMode {
         case .show:
@@ -252,8 +251,8 @@ class DetailViewController: UIViewController {
             self.navigationItem.rightBarButtonItems = [saveButton!]
             
         case .add:
-            addButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
-            self.navigationItem.rightBarButtonItems = [addButton!]
+            saveButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
+            self.navigationItem.rightBarButtonItems = [saveButton!]
         }
         
         guard viewModel != nil else { return }
