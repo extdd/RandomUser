@@ -31,6 +31,7 @@ class MainViewModelImpl: MainViewModel {
     let apiManager: APIManager
     var users: Results<User>?
     var navigationBarTitle: String = "Users"
+    
     var sortingBarItems: [String]? {
         return SortingMode.all.map { mode -> String in
             switch mode {
@@ -39,6 +40,7 @@ class MainViewModelImpl: MainViewModel {
             }
         }
     }
+    
     var preloaderInfo: PreloaderInfo {
         if let users = users, users.count > 0 { return .refreshing }
         else { return .loading }

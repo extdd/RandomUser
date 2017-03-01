@@ -106,15 +106,15 @@ class MainViewController: UIViewController {
         
         // sortingBar
         sortingBar?.segmentedControl.rx.value
-            .subscribe(onNext: { [unowned self] value in
-                self.viewModel?.updateUsers(sorted: SortingMode.all[value])
+            .subscribe(onNext: { [unowned self] in
+                self.viewModel?.updateUsers(sorted: SortingMode.all[$0])
                 self.updateDataSource()
             }).addDisposableTo(disposeBag)
         
         // tableView
         tableView.rx.itemSelected
-            .subscribe(onNext: { [unowned self] indexPath in
-                self.showDetail(forRowAt: indexPath)
+            .subscribe(onNext: { [unowned self] in
+                self.showDetail(forRowAt: $0)
             }).addDisposableTo(disposeBag)
         
     }
