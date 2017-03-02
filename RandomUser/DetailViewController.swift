@@ -185,6 +185,7 @@ class DetailViewController: UIViewController {
             saveButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
                     self.saveActiveUser(isNew: true)
+                    self.view.endEditing(true)
                     self.dismiss(animated: true)
                 }).addDisposableTo(disposeBag)
             
