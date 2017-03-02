@@ -4,7 +4,7 @@ App written in Swift 3 for iOS 9.0 and higher. MVVM, DI, RxSwift, Realm, SnapKit
 
 ## Features
 
-* Intergtation with [Random User Generator API](https://randomuser.me)
+* Integration with [Random User Generator API](https://randomuser.me)
 * Saving users data to the Realm database
 * Editing users and storing history of changes
 
