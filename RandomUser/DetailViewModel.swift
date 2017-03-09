@@ -22,9 +22,9 @@ protocol DetailViewModel {
     var phone: Variable<String?> { get }
     var gender: Variable<Gender?> { get }
     
-    var saveValidation: Observable<Bool> { get set }
-    var emailValidation: Observable<Bool> { get set }
-    var phoneValidation: Observable<Bool> { get set }
+    var saveValidation: Observable<Bool> { get }
+    var emailValidation: Observable<Bool> { get }
+    var phoneValidation: Observable<Bool> { get }
     
     func getTitle(for displayMode: DisplayMode) -> String?
     

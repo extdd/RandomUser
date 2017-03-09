@@ -15,10 +15,10 @@ import SnapKit
 
 class DetailViewController: UIViewController {
     
-    var viewModel: DetailViewModel?
-    var apiManager: APIManager?
+    var viewModel: DetailViewModel
+    var apiManager: APIManager
     
-    fileprivate lazy var content: DetailViewContent = DetailViewContent()
+    fileprivate let content: DetailViewContent = DetailViewContent()
     fileprivate let scrollViewContainer = UIView(frame: .zero)
     fileprivate let scrollView = UIScrollView(frame: .zero) // for auto scrolling content when the keyboard appears
     fileprivate var editButton: UIBarButtonItem?
@@ -36,12 +36,26 @@ class DetailViewController: UIViewController {
 
     // MARK: - INIT
     
+    init(viewModel: DetailViewModel, apiManager: APIManager) {
+        
+        self.viewModel = viewModel
+        self.apiManager = apiManager
+        super.init(nibName: nil, bundle: nil)
+        
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        
+        fatalError("init(coder:) has not been implemented")
+        
+    }
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
         initUI()
         initRX()
-        
+
     }
     
     // MARK: - UI
@@ -62,7 +76,7 @@ class DetailViewController: UIViewController {
     fileprivate func updateUI(for displayMode: DisplayMode) {
         
         updateNavigationBar(for: displayMode)
-        guard let user = viewModel?.activeUser else { return }
+        guard let user = viewModel.activeUser else { return }
         content.update(for: displayMode, with: user)
         content.genderPickerView?.delegate = self
         content.genderPickerView?.dataSource = self
@@ -122,42 +136,42 @@ class DetailViewController: UIViewController {
             // binding
             content.firstNameInput?.rx.text
                 .asObservable()
-                .bindTo(viewModel!.firstName)
+                .bindTo(viewModel.firstName)
                 .addDisposableTo(disposeBag)
             
             content.lastNameInput?.rx.text
                 .asObservable()
-                .bindTo(viewModel!.lastName)
+                .bindTo(viewModel.lastName)
                 .addDisposableTo(disposeBag)
             
             content.emailInput?.rx.text
                 .asObservable()
-                .bindTo(viewModel!.email)
+                .bindTo(viewModel.email)
                 .addDisposableTo(disposeBag)
             
             content.phoneInput?.rx.text
                 .asObservable()
-                .bindTo(viewModel!.phone)
+                .bindTo(viewModel.phone)
                 .addDisposableTo(disposeBag)
 
             content.genderPickerView?.rx.itemSelected
                 .map {
                     return Gender.all[$0.0]
-                }.bindTo(viewModel!.gender)
+                }.bindTo(viewModel.gender)
                 .addDisposableTo(disposeBag)
 
             // validation
-            viewModel?.emailValidation.asObservable()
+            viewModel.emailValidation.asObservable()
                 .subscribe(onNext: { [unowned self] in
                     self.content.emailValidationInfo?.isHidden = $0
                 }).addDisposableTo(disposeBag)
             
-            viewModel?.phoneValidation.asObservable()
+            viewModel.phoneValidation.asObservable()
                 .subscribe(onNext: { [unowned self] in
                     self.content.phoneValidationInfo?.isHidden = $0
                 }).addDisposableTo(disposeBag)
             
-            viewModel?.saveValidation.asObservable()
+            viewModel.saveValidation.asObservable()
                 .subscribe(onNext: { [unowned self] in
                     self.saveButton?.isEnabled = $0
                 }).addDisposableTo(disposeBag)
@@ -202,28 +216,28 @@ class DetailViewController: UIViewController {
     
     fileprivate func saveActiveUser(isNew: Bool = false) {
         
-        guard let user = viewModel?.activeUser else { return }
-        guard let firstName = viewModel?.firstName.value else { return }
-        guard let lastName = viewModel?.lastName.value else { return }
-        guard let gender = viewModel?.gender.value else { return }
+        guard let user = viewModel.activeUser else { return }
+        guard let firstName = viewModel.firstName.value else { return }
+        guard let lastName = viewModel.lastName.value else { return }
+        guard let gender = viewModel.gender.value else { return }
 
-        apiManager?.save(user: user,
+        apiManager.save(user: user,
                          isNew: isNew,
                          gender: gender,
                          firstName: firstName,
                          lastName: lastName,
-                         email: viewModel?.email.value,
-                         phone: viewModel?.phone.value)
+                         email: viewModel.email.value,
+                         phone: viewModel.phone.value)
         
     }
     
     fileprivate func showChangeHistory() {
         
-        guard let user = viewModel?.activeUser else { return }
+        guard let user = viewModel.activeUser else { return }
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         guard let historyViewController = appDelegate.assembler.resolver.resolve(HistoryViewController.self) else { return }
         
-        historyViewController.viewModel?.snapshots = user.snapshots
+        historyViewController.viewModel.snapshots = user.snapshots
         self.navigationController?.pushViewController(historyViewController, animated: true)
 
     }
@@ -256,8 +270,7 @@ class DetailViewController: UIViewController {
             self.navigationItem.rightBarButtonItems = [saveButton!]
         }
         
-        guard viewModel != nil else { return }
-        self.title = viewModel?.getTitle(for: displayMode)
+        self.title = viewModel.getTitle(for: displayMode)
         
     }
     

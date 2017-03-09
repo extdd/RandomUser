@@ -15,29 +15,20 @@ class ViewControllersAssembly: Assembly {
         // MARK: - MAIN VIEW CONTROLLER
         
         container.register(MainViewController.self) { r in
-            let mainViewController = MainViewController()
-            mainViewController.viewModel = r.resolve(MainViewModel.self)!
-            mainViewController.apiManager = r.resolve(APIManager.self)!
-            return mainViewController
+            MainViewController(viewModel: r.resolve(MainViewModel.self)!, apiManager: r.resolve(APIManager.self)!)
             }
         
         // MARK: - DETAIL VIEW CONTROLLER
         
         container.register(DetailViewController.self) { r in
-            let detailViewController = DetailViewController()
-            detailViewController.viewModel = r.resolve(DetailViewModel.self)!
-            detailViewController.apiManager = r.resolve(APIManager.self)!
-            return detailViewController
+            DetailViewController(viewModel: r.resolve(DetailViewModel.self)!, apiManager: r.resolve(APIManager.self)!)
             }
         
         // MARK: - HISTORY VIEW CONTROLLER
         
         container.register(HistoryViewController.self) { r in
-            let historyViewController = HistoryViewController()
-            historyViewController.viewModel = r.resolve(HistoryViewModel.self)!
-            historyViewController.apiManager = r.resolve(APIManager.self)!
-            return historyViewController
-        }
+            HistoryViewController(viewModel: r.resolve(HistoryViewModel.self)!)
+            }
         
     }
     

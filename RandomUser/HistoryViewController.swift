@@ -15,13 +15,25 @@ import SnapKit
 
 class HistoryViewController: UIViewController {
     
-    var viewModel: HistoryViewModel?
-    var apiManager: APIManager?
+    var viewModel: HistoryViewModel
     
     fileprivate let disposeBag = DisposeBag()
     fileprivate let tableView = UITableView(frame: .zero, style: .plain)
     
     // MARK: - INIT
+    
+    init(viewModel: HistoryViewModel) {
+        
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+        
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        
+        fatalError("init(coder:) has not been implemented")
+        
+    }
     
     override func viewDidLoad() {
         
@@ -37,7 +49,7 @@ class HistoryViewController: UIViewController {
         
         self.automaticallyAdjustsScrollViewInsets = false
         self.view.backgroundColor = .white
-        self.title = viewModel?.navigationBarTitle
+        self.title = viewModel.navigationBarTitle
         
         initNavigationBar()
         initTableView()
@@ -47,7 +59,7 @@ class HistoryViewController: UIViewController {
     
     fileprivate func initNavigationBar() {
         
-        self.title = viewModel?.navigationBarTitle
+        self.title = viewModel.navigationBarTitle
         
     }
     
@@ -68,7 +80,7 @@ class HistoryViewController: UIViewController {
     
     fileprivate func initRX() {
         
-        guard let snapshots = viewModel?.snapshots else { return }
+        guard let snapshots = viewModel.snapshots else { return }
 
         Observable.collection(from: snapshots)
             .subscribe(onNext: { [weak self] _ in
@@ -99,10 +111,10 @@ extension HistoryViewController {
         tableView.dataSource = nil
         let dataSource = RxTableViewRealmDataSource<UserSnapshot>(cellIdentifier: HistoryTableViewCell.className, cellType: HistoryTableViewCell.self) {
             [weak self] cell, indexPath, snapshot in
-            self?.updateCell(cell, for: snapshot)
+            self?.update(cell, for: snapshot)
         }
         dataSource.animated = false
-        if let snapshots = viewModel?.snapshots {
+        if let snapshots = viewModel.snapshots {
             Observable.changeset(from: snapshots.sorted(byKeyPath: "timestamp", ascending: false))
                 .bindTo(tableView.rx.realmChanges(dataSource))
                 .addDisposableTo(disposeBag)
@@ -110,10 +122,9 @@ extension HistoryViewController {
         
     }
     
-    fileprivate func updateCell(_ cell: HistoryTableViewCell, for snapshot: UserSnapshot) {
+    fileprivate func update(_ cell: HistoryTableViewCell, for snapshot: UserSnapshot) {
         
-        guard viewModel != nil else { return }
-        let texts = viewModel!.getCellTexts(for: snapshot)
+        let texts = viewModel.getCellTexts(for: snapshot)
         cell.dateLabel.text = texts.date
         cell.nameLabel.text = texts.name
         cell.detailLabel.text = texts.detail

@@ -13,7 +13,7 @@ class DetailViewContent: UIView {
     
     // internal UI controls
     
-    lazy var pictureImageView: UIImageView = {
+    var pictureImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: CustomImage.userDefaultPictureName))
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
@@ -35,9 +35,9 @@ class DetailViewContent: UIView {
     
     // private UI controls & views
 
-    fileprivate lazy var userDefaultPicture: UIImage? = UIImage(named: CustomImage.userDefaultPictureName)
-    fileprivate lazy var nameHeader: UILabel = UILabel.create(text: "Name:", type: .header)
-    fileprivate lazy var genderHeader: UILabel = UILabel.create(text: "Gender:", type: .header)
+    fileprivate let userDefaultPicture: UIImage? = UIImage(named: CustomImage.userDefaultPictureName)
+    fileprivate let nameHeader: UILabel = UILabel.create(text: "Name:", type: .header)
+    fileprivate let genderHeader: UILabel = UILabel.create(text: "Gender:", type: .header)
     
     fileprivate var nameValue: UILabel?
     fileprivate var genderValue: UILabel?
@@ -299,7 +299,7 @@ class DetailViewContent: UIView {
         
         // removing non-constant (dynamic) subviews
         self.subviews.filter({
-            for item in constantSubviews { if $0 == item {return false} }
+            for item in constantSubviews { if $0 == item { return false } }
             return true
         }).forEach({
             $0.removeFromSuperview()

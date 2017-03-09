@@ -19,11 +19,9 @@ extension UIView {
     }
     
     func addSubviews(_ views: [UIView?]) {
-        
-        views.forEach({
-            if $0 != nil { self.addSubview($0!) }
-        })
-        
+
+        views.flatMap{ $0 }.forEach{ self.addSubview($0) }
+
     }
     
 }

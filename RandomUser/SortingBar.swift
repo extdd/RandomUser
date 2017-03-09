@@ -14,8 +14,8 @@ class SortingBar: UIView {
     let segmentedControl: UISegmentedControl
     let items: [String]?
     
-    fileprivate lazy var body = UIView(frame: .zero)
-    fileprivate lazy var blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+    fileprivate let body = UIView(frame: .zero)
+    fileprivate let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     
     // MARK: - INIT
     

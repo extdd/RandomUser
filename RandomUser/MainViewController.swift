@@ -15,8 +15,8 @@ import SnapKit
 
 class MainViewController: UIViewController {
     
-    var viewModel: MainViewModel?
-    var apiManager: APIManager?
+    var viewModel: MainViewModel
+    var apiManager: APIManager
 
     fileprivate let disposeBag = DisposeBag()
     fileprivate let tableView = UITableView(frame: .zero, style: .plain)
@@ -28,10 +28,23 @@ class MainViewController: UIViewController {
     
     // MARK: - INIT
     
+    init(viewModel: MainViewModel, apiManager: APIManager) {
+        
+        self.viewModel = viewModel
+        self.apiManager = apiManager
+        super.init(nibName: nil, bundle: nil)
+        
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        
+        fatalError("init(coder:) has not been implemented")
+        
+    }
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        
         initUI()
         initRX()
         refresh()
@@ -53,11 +66,11 @@ class MainViewController: UIViewController {
         
         refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: nil, action: nil)
         addButton = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
-        sortingBar = SortingBar(frame: .zero, withItems: self.viewModel?.sortingBarItems)
+        sortingBar = SortingBar(frame: .zero, withItems: self.viewModel.sortingBarItems)
         navigationItem.leftBarButtonItems = [refreshButton!]
         navigationItem.rightBarButtonItems = [addButton!]
         self.view.addSubview(sortingBar!)
-        self.title = viewModel?.navigationBarTitle
+        self.title = viewModel.navigationBarTitle
 
     }
     
@@ -69,7 +82,6 @@ class MainViewController: UIViewController {
         self.view.sendSubview(toBack: tableView)
 
     }
-    
     
     fileprivate func setPreloader(_ visible: Bool, withInfo info: PreloaderInfo? = nil) {
         
@@ -107,7 +119,7 @@ class MainViewController: UIViewController {
         // sortingBar
         sortingBar?.segmentedControl.rx.value
             .subscribe(onNext: { [unowned self] in
-                self.viewModel?.updateUsers(sorted: SortingMode.all[$0])
+                self.viewModel.updateUsers(sorted: SortingMode.all[$0])
                 self.updateDataSource()
             }).addDisposableTo(disposeBag)
         
@@ -123,9 +135,9 @@ class MainViewController: UIViewController {
     
     fileprivate func refresh() {
         
-        setPreloader(true, withInfo: viewModel?.preloaderInfo)
+        setPreloader(true, withInfo: viewModel.preloaderInfo)
         
-        apiManager?.loadUsers()
+        apiManager.loadUsers()
             .asObservable()
             .subscribe(onError: { [weak self] _ in
                     self?.setPreloader(false)
@@ -137,17 +149,17 @@ class MainViewController: UIViewController {
     
     fileprivate func showDetail(forRowAt indexPath: IndexPath? = nil, isNewUser: Bool? = false) {
         
-        guard let users = self.viewModel?.users else { return }
+        guard let users = self.viewModel.users else { return }
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         guard let detailViewController = appDelegate.assembler.resolver.resolve(DetailViewController.self) else { return }
-        
+
         if indexPath != nil {
             // show detail for the selected user
-            detailViewController.viewModel?.activeUser = users[indexPath!.row]
+            detailViewController.viewModel.activeUser = users[indexPath!.row]
             self.navigationController?.pushViewController(detailViewController, animated: true)
         } else if isNewUser == true {
             // show detail with edit mode for the new user
-            detailViewController.viewModel?.activeUser = apiManager?.getNewUser()
+            detailViewController.viewModel.activeUser = apiManager.getNewUser()
             let navigationController = UINavigationController(rootViewController: detailViewController, customized: true)
             self.present(navigationController, animated: true)
         }
@@ -193,25 +205,26 @@ class MainViewController: UIViewController {
 extension MainViewController {
     
     fileprivate func updateDataSource() {
-
+        
         tableView.dataSource = nil
         let dataSource = RxTableViewRealmDataSource<User>(cellIdentifier: UITableViewCell.className, cellType: UITableViewCell.self) {
             [weak self] cell, indexPath, user in
             cell.accessoryType = .disclosureIndicator
-            self?.updateCell(cell, for: user)
+            self?.update(cell, for: user)
         }
         dataSource.animated = false
-
-        guard let users = viewModel?.users else { return }
+        
+        guard let users = viewModel.users else { return }
         Observable.changeset(from: users)
             .bindTo(tableView.rx.realmChanges(dataSource))
             .addDisposableTo(disposeBag)
-
+        
     }
     
-    fileprivate func updateCell(_ cell: UITableViewCell, for user: User) {
+    fileprivate func update(_ cell: UITableViewCell, for user: User) {
         
-        cell.textLabel?.text = viewModel?.getCellText(for: user)
+        cell.accessoryType = .disclosureIndicator
+        cell.textLabel?.text = viewModel.getCellText(for: user)
         cell.textLabel?.textColor = CustomColor.text
         cell.textLabel?.font = CustomFont.text
         if let thumbnailURL = user.thumbnailURL {

@@ -15,21 +15,21 @@ class ViewModelsAssembly: Assembly {
         
         // MARK: - MAIN VIEW MODEL
         
-        container.register(MainViewModel.self) { r in
-            return MainViewModelImpl(apiManager: r.resolve(APIManager.self)!)
+        container.register(MainViewModel.self) { _ in
+            MainViewModelImpl()
             }
         
         // MARK: - DETAIL VIEW MODEL
         
-        container.register(DetailViewModel.self) { r in
-            return DetailViewModelImpl()
+        container.register(DetailViewModel.self) { _ in
+            DetailViewModelImpl()
             }
         
         // MARK: - HISTORY VIEW MODEL
         
-        container.register(HistoryViewModel.self) { r in
-            return HistoryViewModelImpl()
-        }
+        container.register(HistoryViewModel.self) { _ in
+            HistoryViewModelImpl()
+            }
         
     }
     
