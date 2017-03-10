@@ -88,7 +88,6 @@ struct APIManagerImpl: APIManager {
         
         guard !firstName.isEmpty && !lastName.isEmpty else { return }
         
-        let realm = try! Realm()
         try! realm.write {
 
             user.gender = gender.rawValue
@@ -117,7 +116,6 @@ struct APIManagerImpl: APIManager {
     
     fileprivate func getUniqueUsername(forFirstName firstName: String, withLastName lastName: String) -> String {
         
-        let realm = try! Realm()
         let users = realm.objects(User.self)
         var uniqueUsername = firstName.appending(lastName).lowercased()
         

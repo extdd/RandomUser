@@ -15,8 +15,8 @@ class ViewModelsAssembly: Assembly {
         
         // MARK: - MAIN VIEW MODEL
         
-        container.register(MainViewModel.self) { _ in
-            MainViewModelImpl()
+        container.register(MainViewModel.self) { r in
+            MainViewModelImpl(realm: r.resolve(Realm.self)!)
             }
         
         // MARK: - DETAIL VIEW MODEL

@@ -13,6 +13,7 @@ import RealmSwift
 
 protocol MainViewModel {
     
+    var realm: Realm { get }
     var users: Results<User>? { get set }
     var navigationBarTitle: String { get set }
     var sortingBarItems: [String]? { get }
@@ -27,6 +28,7 @@ protocol MainViewModel {
 
 class MainViewModelImpl: MainViewModel {
     
+    let realm: Realm
     var users: Results<User>?
     var navigationBarTitle: String = "Users"
     
@@ -44,11 +46,18 @@ class MainViewModelImpl: MainViewModel {
         else { return .loading }
     }
     
+    // MARK: - INIT
+    
+    init(realm: Realm) {
+        
+        self.realm = realm
+        
+    }
+    
     // MARK: - UPDATE
     
     func updateUsers(sorted: SortingMode) {
         
-        let realm = try! Realm()
         users = realm.objects(User.self).sorted(byKeyPath: sorted.rawValue)
         
     }
