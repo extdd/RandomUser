@@ -38,13 +38,14 @@ struct CustomFont {
 // COLOR
 
 struct CustomColor {
-    
-    static let defaultTint = UIColor(hex: 0x5e1fe4)
-    static let navigationTint = UIColor(hex: 0x20fec0)
+
+    static let defaultTint = UIColor(hex: 0x269fd7)
+    static let navigationTint = UIColor(hex: 0x41e2fa)
     static let text = UIColor(hex: 0x2d2b37)
     static let dark = UIColor(hex: 0x2d2b37)
     static let light = UIColor(hex: 0xf8f7f7)
     static let gray = UIColor(hex: 0x595959)
+    static let red = UIColor(hex: 0xe3202b)
 
 }
 

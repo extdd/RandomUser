@@ -19,7 +19,9 @@ extension UILabel {
         var font: UIFont
         var color: UIColor
         
-        if text != nil { label.text = text }
+        if text != nil {
+            label.text = text
+        }
 
         switch type {
         case .text:
@@ -45,7 +47,7 @@ extension UILabel {
 
         case .validationInfo:
             font = CustomFont.validationInfo
-            color = CustomColor.defaultTint
+            color = CustomColor.red
             label.isHidden = true
         }
         
