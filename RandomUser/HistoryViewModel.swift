@@ -37,8 +37,12 @@ struct HistoryViewModelImpl: HistoryViewModel {
         let gender = Gender.from(string: snapshot.gender).symbol
 
         var detail: String = ""
-        if let email = snapshot.email { detail.append("\(email)\n") }
-        if let phone = snapshot.phone { detail.append("\(phone)") }
+        if let email = snapshot.email {
+            detail.append("\(email)\n")
+        }
+        if let phone = snapshot.phone {
+            detail.append("\(phone)")
+        }
         detail = detail.trimmingCharacters(in: .newlines)
 
         return (date, title, gender, detail)

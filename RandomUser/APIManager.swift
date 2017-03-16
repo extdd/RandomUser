@@ -26,7 +26,7 @@ protocol APIManager {
 
 // MARK: - IMPLEMENTATION
 
-struct APIManagerImpl: APIManager {
+class APIManagerImpl: APIManager {
     
     let config: APIConfig
     let networkManager: NetworkManager
@@ -60,9 +60,7 @@ struct APIManagerImpl: APIManager {
                 let users = try [User].decode(results)
                 return users
 
-            }
-        
-            .do(onNext: { users in
+            }.do(onNext: { users in
                 
                 let appDelegate = UIApplication.shared.delegate as! AppDelegate
                 guard let realm = appDelegate.assembler.resolver.resolve(Realm.self) else { return } // new Realm instance for the new thread
@@ -114,29 +112,25 @@ struct APIManagerImpl: APIManager {
         
     }
     
+    fileprivate func usernameExists(_ username: String, in users: Results<User>) -> Bool {
+        
+        return users
+            .map { $0.username.lowercased() }
+            .contains(username)
+        
+    }
+    
     fileprivate func getUniqueUsername(forFirstName firstName: String, withLastName lastName: String) -> String {
         
         let users = realm.objects(User.self)
-        var uniqueUsername = firstName.appending(lastName).lowercased()
-        
-        // checking if username exists in Realm database
-        var isExists: Bool = true
-        existsLoop: while isExists {
-            
-            for user in users {
-                // if exists, creating new one
-                if user.username.lowercased() == uniqueUsername {
-                    isExists = true
-                    uniqueUsername.addNumber()
-                    continue existsLoop
-                }
-            }
-            
-            isExists = false
-            
+        var username = firstName.appending(lastName).lowercased()
+
+        // appending unique number if username exists in Realm database
+        while usernameExists(username, in: users) {
+            username.addNumber()
         }
         
-        return uniqueUsername
+        return username
         
     }
     

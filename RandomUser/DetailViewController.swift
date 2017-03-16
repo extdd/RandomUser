@@ -77,7 +77,7 @@ class DetailViewController: UIViewController {
         
         updateNavigationBar(for: displayMode)
         guard let user = viewModel.activeUser else { return }
-        content.update(for: displayMode, with: user)
+        content.updateUI(for: displayMode, with: user)
         content.genderPickerView?.delegate = self
         content.genderPickerView?.dataSource = self
         content.genderPickerView?.selectRow(Gender.from(string: user.gender).hashValue, inComponent: 0, animated: false)
@@ -104,6 +104,7 @@ class DetailViewController: UIViewController {
         switch displayMode {
         // showing details
         case .show:
+            
             // tap events
             editButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
@@ -115,22 +116,30 @@ class DetailViewController: UIViewController {
                     self.showChangeHistory()
                 }).addDisposableTo(disposeBag)
             
-        // form validation (in both modes)
+        // editing or adding new user
         case .edit, .add:
-            // edit events
-            content.firstNameInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
+            
+            // tap events
+            saveButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
-                    self.content.lastNameInput?.becomeFirstResponder()
+                    if displayMode == .edit {
+                        self.saveActiveUser()
+                        self.displayMode = .show
+                    } else {
+                        self.saveActiveUser(isNew: true)
+                        self.dismiss(animated: true)
+                    }
+                    self.view.endEditing(true)
                 }).addDisposableTo(disposeBag)
             
-            content.lastNameInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
+            cancelButton?.rx.tap
                 .subscribe(onNext: { [unowned self] in
-                    self.content.emailInput?.becomeFirstResponder()
-                }).addDisposableTo(disposeBag)
-            
-            content.emailInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
-                .subscribe(onNext: { [unowned self] in
-                    self.content.phoneInput?.becomeFirstResponder()
+                    if displayMode == .edit {
+                        self.displayMode = .show
+                    } else {
+                        self.dismiss(animated: true)
+                    }
+                    self.view.endEditing(true)
                 }).addDisposableTo(disposeBag)
             
             // binding
@@ -176,38 +185,22 @@ class DetailViewController: UIViewController {
                     self.saveButton?.isEnabled = $0
                 }).addDisposableTo(disposeBag)
             
-            fallthrough
-            
-        // editing details
-        case .edit:
-            guard displayMode == .edit else { fallthrough }
-             // tap events
-            saveButton?.rx.tap
+            // edit events
+            content.firstNameInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
                 .subscribe(onNext: { [unowned self] in
-                    self.saveActiveUser()
-                    self.displayMode = .show
+                    self.content.lastNameInput?.becomeFirstResponder()
                 }).addDisposableTo(disposeBag)
             
-            cancelButton?.rx.tap
+            content.lastNameInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
                 .subscribe(onNext: { [unowned self] in
-                    self.displayMode = .show
+                    self.content.emailInput?.becomeFirstResponder()
                 }).addDisposableTo(disposeBag)
             
-        // adding new user
-        case .add:
-             // tap events
-            saveButton?.rx.tap
+            content.emailInput?.rx.controlEvent(UIControlEvents.editingDidEndOnExit)
                 .subscribe(onNext: { [unowned self] in
-                    self.saveActiveUser(isNew: true)
-                    self.view.endEditing(true)
-                    self.dismiss(animated: true)
+                    self.content.phoneInput?.becomeFirstResponder()
                 }).addDisposableTo(disposeBag)
             
-            cancelButton?.rx.tap
-                .subscribe(onNext: { [unowned self] in
-                    self.view.endEditing(true)
-                    self.dismiss(animated: true)
-                }).addDisposableTo(disposeBag)
         }
 
     }
@@ -249,25 +242,27 @@ class DetailViewController: UIViewController {
         (editButton, saveButton, cancelButton)  = (nil, nil, nil)
         
         switch displayMode {
+        // showing details
         case .show:
+            
             editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: nil, action: nil)
             self.navigationItem.leftBarButtonItems = []
             self.navigationItem.rightBarButtonItems = [editButton!]
-            
+        
+        // editing or adding new user
         case .edit, .add:
-            self.view.backgroundColor = CustomColor.light
+            
+            if displayMode == .edit {
+                saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: nil, action: nil)
+            } else {
+                saveButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
+            }
+
             cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: nil, action: nil)
             self.navigationItem.leftBarButtonItems = [cancelButton!]
-            fallthrough
-            
-        case .edit:
-            guard displayMode == .edit else { fallthrough }
-            saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: nil, action: nil)
             self.navigationItem.rightBarButtonItems = [saveButton!]
+            self.view.backgroundColor = CustomColor.light
             
-        case .add:
-            saveButton = UIBarButtonItem(title: "Add", style: .done, target: nil, action: nil)
-            self.navigationItem.rightBarButtonItems = [saveButton!]
         }
         
         self.title = viewModel.getTitle(for: displayMode)
@@ -278,7 +273,6 @@ class DetailViewController: UIViewController {
     
     fileprivate func initContent() {
         
-        content.initUI()
         scrollView.addSubview(content)
         scrollViewContainer.addSubview(scrollView)
         self.view.addSubview(scrollViewContainer)
@@ -297,7 +291,7 @@ class DetailViewController: UIViewController {
     
     // MARK: - CONSTRAINTS
     
-    func setConstraints() {
+    fileprivate func setConstraints() {
         
         scrollViewContainer.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)

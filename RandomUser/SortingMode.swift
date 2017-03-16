@@ -12,7 +12,9 @@ enum SortingMode: String {
     
     static let all: [SortingMode] = [.firstName, .lastName]
     static var allRaw: [String] {
-        return self.all.map { $0.rawValue }
+        return self.all.map {
+            $0.rawValue
+        }
     }
     
 }

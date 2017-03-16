@@ -14,13 +14,17 @@ extension UIView {
     
     var realContentSize: CGSize {
         get {
-            return self.subviews.reduce(CGRect.zero, { $0.union($1.frame) }).size
+            return self.subviews
+                .reduce(CGRect.zero, { $0.union($1.frame) })
+                .size
         }
     }
     
     func addSubviews(_ views: [UIView?]) {
 
-        views.flatMap{ $0 }.forEach{ self.addSubview($0) }
+        views
+            .flatMap { $0 }
+            .forEach { self.addSubview($0) }
 
     }
     

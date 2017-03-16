@@ -16,10 +16,21 @@ extension UITextField {
     class func create(text: String? = nil, placeholder: String? = nil, capitalized: Bool? = false, keyboard: UIKeyboardType? = nil) -> UITextField {
         
         let field = UITextField(frame: .zero)
-        if text != nil { field.text = text }
-        if placeholder != nil { field.placeholder = placeholder }
-        if capitalized == true { field.autocapitalizationType = .sentences } else { field.autocapitalizationType = .none }
-        if keyboard != nil { field.keyboardType = keyboard! }
+
+        if text != nil {
+            field.text = text
+        }
+        if placeholder != nil {
+            field.placeholder = placeholder
+        }
+        if capitalized == true {
+            field.autocapitalizationType = .sentences
+        } else {
+            field.autocapitalizationType = .none
+        }
+        if keyboard != nil {
+            field.keyboardType = keyboard!
+        }
 
         field.textColor = CustomColor.text
         field.borderStyle = .roundedRect

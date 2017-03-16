@@ -35,15 +35,20 @@ class MainViewModelImpl: MainViewModel {
     var sortingBarItems: [String]? {
         return SortingMode.all.map {
             switch $0 {
-            case .firstName: return "First name"
-            case .lastName: return "Last name"
+            case .firstName:
+                return "First name"
+            case .lastName:
+                return "Last name"
             }
         }
     }
     
     var preloaderInfo: PreloaderInfo {
-        if let users = users, users.count > 0 { return .refreshing }
-        else { return .loading }
+        if let users = users, users.count > 0 {
+            return .refreshing
+        } else {
+            return .loading
+        }
     }
     
     // MARK: - INIT

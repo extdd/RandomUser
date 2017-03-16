@@ -23,9 +23,11 @@ class DetailViewContent: UIView {
     var firstNameInput: UITextField?
     var lastNameInput: UITextField?
     var emailInput: UITextField?
-    var emailValidationInfo: UILabel?
     var phoneInput: UITextField?
+    
+    var emailValidationInfo: UILabel?
     var phoneValidationInfo: UILabel?
+    
     var genderPickerView: UIPickerView?
     var historyButton: UIButton?
     
@@ -36,56 +38,71 @@ class DetailViewContent: UIView {
     // private UI controls & views
 
     fileprivate let userDefaultPicture: UIImage? = UIImage(named: CustomImage.userDefaultPictureName)
+    
     fileprivate let nameHeader: UILabel = UILabel.create(text: "Name:", type: .header)
     fileprivate let genderHeader: UILabel = UILabel.create(text: "Gender:", type: .header)
+    fileprivate var emailHeader: UILabel?
+    fileprivate var phoneHeader: UILabel?
     
     fileprivate var nameValue: UILabel?
     fileprivate var genderValue: UILabel?
-    fileprivate var emailHeader: UILabel?
     fileprivate var emailValue: UILabel?
-    fileprivate var phoneHeader: UILabel?
     fileprivate var phoneValue: UILabel?
     
     // MARK: - INIT
     
-    func initUI() {
+    override init(frame: CGRect) {
         
-        constantSubviews = [pictureImageView, nameHeader, genderHeader]
-        self.addSubviews(constantSubviews)
-        self.layoutMargins = UIEdgeInsets(all: Layout.margin)
+        super.init(frame: frame)
+        initUI()
         
     }
     
-    // MARK: - UPDATE UI
+    required init?(coder aDecoder: NSCoder) {
+        
+        fatalError("init(coder:) has not been implemented")
+        
+    }
+    
+    
+    
+    // MARK: - UI
 
-    func update(for displayMode: DisplayMode, with user: User) {
+    func updateUI(for displayMode: DisplayMode, with user: User) {
         
-        clear()
+        clearUI()
         
-        // setting picture
+        // picture
         if let pictureURL = user.pictureURL {
             pictureImageView.sd_setImage(with: URL(string: pictureURL), placeholderImage: userDefaultPicture)
         }
 
-        // creating optional headers
-        if user.email != nil || displayMode != .show { emailHeader = UILabel.create(text: "Email:", type: .header) }
-        if user.phone != nil || displayMode != .show { phoneHeader = UILabel.create(text: "Phone:", type: .header) }
-        self.addSubviews([emailHeader, phoneHeader])
+        // optional headers
+        if user.email != nil || displayMode != .show {
+            emailHeader = UILabel.create(text: "Email:", type: .header)
+            self.addSubview(emailHeader!)
+        }
+        if user.phone != nil || displayMode != .show {
+            phoneHeader = UILabel.create(text: "Phone:", type: .header)
+            self.addSubview(phoneHeader!)
+        }
         
         switch (displayMode) {
         case .show:
-            // creating labels
+            
+            // value labels
             nameValue = UILabel.create(text: user.fullName, lines: 2)
             genderValue = UILabel.create(text: user.gender)
-            if user.email != nil { emailValue = UILabel.create(text: user.email) }
-            if user.phone != nil { phoneValue = UILabel.create(text: user.phone) }
-            // creating history button
+            emailValue = (user.email != nil) ? UILabel.create(text: user.email) : nil
+            phoneValue = (user.phone != nil) ? UILabel.create(text: user.phone) : nil
+   
+            // history button
             historyButton = UIButton(type: UIButtonType.system)
             historyButton!.setTitle("Change history", for: .normal)
             historyButton!.setTitleColor(.white, for: .normal)
             historyButton!.titleLabel?.font = CustomFont.text
             historyButton!.backgroundColor = CustomColor.defaultTint
-            // adding subviews to the view
+            
             self.addSubviews([
                 nameValue,
                 genderValue,
@@ -95,24 +112,37 @@ class DetailViewContent: UIView {
                 ])
             
         case .edit, .add:
-            // creating inputs
-            firstNameInput = UITextField.create(placeholder: "First name", capitalized: true)
-            lastNameInput = UITextField.create(placeholder: "Last name", capitalized: true)
-            emailInput = UITextField.create(placeholder: "Email address", keyboard: .emailAddress)
-            phoneInput = UITextField.create(placeholder: "Phone number", keyboard: .phonePad)
-            // setting return key type
+            
+            // firstName input
+            firstNameInput = UITextField.create(text: user.firstName, placeholder: "First name", capitalized: true)
             firstNameInput!.returnKeyType = .next
+            
+            // lastName input
+            lastNameInput = UITextField.create(text: user.lastName, placeholder: "Last name", capitalized: true)
             lastNameInput!.returnKeyType = .next
+            
+            // email input
+            emailInput = UITextField.create(text: user.email, placeholder: "Email address", keyboard: .emailAddress)
             emailInput!.returnKeyType = .next
-            // creating validation labels
+            
+            // phone input
+            phoneInput = UITextField.create(text: user.phone, placeholder: "Phone number", keyboard: .phonePad)
+            
+            // validation labels
             emailValidationInfo = UILabel.create(text: "Enter a valid email address", type: .validationInfo)
             phoneValidationInfo = UILabel.create(text: "Enter a valid phone number", type: .validationInfo)
-            // creating gender picker
+            
+            // gender picker
             genderPickerView = UIPickerView(frame: .zero)
             genderPickerView!.backgroundColor = .white
             genderPickerView!.showsSelectionIndicator = true
             genderPickerView!.selectRow(0, inComponent: 0, animated: false)
-            // adding subviews to the view
+            
+            // first responder
+            if user.firstName.isEmpty {
+                firstNameInput!.becomeFirstResponder()
+            }
+            
             self.addSubviews([
                 firstNameInput!,
                 lastNameInput!,
@@ -123,22 +153,17 @@ class DetailViewContent: UIView {
                 genderPickerView!
                 ])
             
-            fallthrough
-            
-        case .edit:
-            guard displayMode == .edit else { fallthrough }
-            // setting current values to the inputs
-            firstNameInput!.text = user.firstName
-            lastNameInput!.text = user.lastName
-            emailInput!.text = user.email
-            phoneInput!.text = user.phone
-            
-        case .add:
-            // setting auto focus to the first input
-            firstNameInput!.becomeFirstResponder()
         }
         
         updateConstraints(for: displayMode)
+        
+    }
+    
+    fileprivate func initUI() {
+        
+        constantSubviews = [pictureImageView, nameHeader, genderHeader]
+        self.addSubviews(constantSubviews)
+        self.layoutMargins = UIEdgeInsets(all: Layout.margin)
         
     }
     
@@ -175,31 +200,32 @@ class DetailViewContent: UIView {
                 let historyButton = historyButton
                 else { return }
             
-            // name
+            // name value
             nameValue.snp.remakeConstraints { make in
                 make.top.equalTo(nameHeader.snp.bottom).offset(Layout.marginExtraSmall)
                 make.left.right.equalTo(nameHeader)
             }
             
-            // gender
+            // gender value
             genderValue.snp.remakeConstraints { make in
                 make.top.equalTo(genderHeader.snp.bottom).offset(Layout.marginExtraSmall)
                 make.left.right.equalTo(genderHeader)
             }
             
-            // email
+            // email header
             emailHeader?.snp.remakeConstraints { make in
                 make.top.equalTo(genderValue.snp.bottom).offset(Layout.margin)
                 make.left.right.equalTo(genderValue)
             }
             
+            // email value
             emailValue?.snp.remakeConstraints { make in
                 guard emailHeader != nil else { return }
                 make.top.equalTo(emailHeader!.snp.bottom).offset(Layout.marginExtraSmall)
                 make.left.right.equalTo(emailHeader!)
             }
             
-            // phone
+            // phone header
             phoneHeader?.snp.remakeConstraints { make in
                 let top = make.top
                 if emailValue != nil {
@@ -210,6 +236,7 @@ class DetailViewContent: UIView {
                 make.left.right.equalTo(genderHeader)
             }
             
+            // phone value
             phoneValue?.snp.remakeConstraints { make in
                 guard phoneHeader != nil else { return }
                 make.top.equalTo(phoneHeader!.snp.bottom).offset(Layout.marginExtraSmall)
@@ -243,46 +270,56 @@ class DetailViewContent: UIView {
                 let phoneValidationInfo = phoneValidationInfo
                 else { return }
             
-            // name
+            // firstName input
             firstNameInput.snp.remakeConstraints { make in
                 make.top.equalTo(nameHeader.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(nameHeader)
             }
+            
+            // lastName input
             lastNameInput.snp.remakeConstraints { make in
                 make.top.equalTo(firstNameInput.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(nameHeader)
             }
             
-            // gender
+            // gender picker
             genderPickerView.snp.remakeConstraints { make in
                 make.top.equalTo(genderHeader.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalToSuperview()
                 make.height.equalTo(100)
             }
             
-            // email
+            // email header
             emailHeader.snp.remakeConstraints { make in
                 make.top.equalTo(genderPickerView.snp.bottom).offset(Layout.margin)
                 make.left.right.equalTo(genderHeader)
             }
+            
+            // email input
             emailInput.snp.remakeConstraints { make in
                 make.top.equalTo(emailHeader.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(emailHeader)
             }
+            
+            // email validationInfo
             emailValidationInfo.snp.remakeConstraints { make in
                 make.top.equalTo(emailInput.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(genderHeader)
             }
             
-            // phone
+            // phone header
             phoneHeader.snp.remakeConstraints { make in
                 make.top.equalTo(emailValidationInfo.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(genderHeader)
             }
+            
+            // phone input
             phoneInput.snp.remakeConstraints { make in
                 make.top.equalTo(phoneHeader.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(phoneHeader)
             }
+            
+            // phone validationInfo
             phoneValidationInfo.snp.remakeConstraints { make in
                 make.top.equalTo(phoneInput.snp.bottom).offset(Layout.marginSmall)
                 make.left.right.equalTo(genderHeader)
@@ -293,33 +330,36 @@ class DetailViewContent: UIView {
 
     }
     
-    // MARK: - CLEAR
+    // MARK: - CLEAR UI
     
-    func clear() {
+    fileprivate func clearUI() {
         
         // removing non-constant (dynamic) subviews
-        self.subviews.filter({
-            for item in constantSubviews { if $0 == item { return false } }
-            return true
-        }).forEach({
-            $0.removeFromSuperview()
-        })
+        self.subviews
+            .filter {
+                return !constantSubviews.contains($0)
+            }.forEach {
+                $0.removeFromSuperview()
+            }
+        
+        emailHeader = nil
+        phoneHeader = nil
         
         nameValue = nil
         genderValue = nil
-        emailHeader = nil
         emailValue = nil
-        phoneHeader = nil
         phoneValue = nil
-        historyButton = nil
         
         firstNameInput = nil
         lastNameInput = nil
-        genderPickerView = nil
         emailInput = nil
-        emailValidationInfo = nil
         phoneInput = nil
+        
+        emailValidationInfo = nil
         phoneValidationInfo = nil
+        
+        genderPickerView = nil
+        historyButton = nil
         
     }
     

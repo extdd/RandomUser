@@ -20,10 +20,17 @@ enum Gender: String {
     }
     
     static let all: [Gender] = [.male, .female]
+    
     static func from(string: String) -> Gender {
+        
         var gender: Gender = .male
-        self.all.forEach { if $0.rawValue == string.lowercased() { gender = $0 } }
+        self.all.forEach {
+            if $0.rawValue == string.lowercased() {
+                gender = $0
+            }
+        }
         return gender
+        
     }
     
 }

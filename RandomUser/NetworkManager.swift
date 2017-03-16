@@ -19,7 +19,7 @@ protocol NetworkManager {
 
 // MARK: - IMPLEMENTATION
 
-struct NetworkManagerImpl: NetworkManager {
+class NetworkManagerImpl: NetworkManager {
     
     func loadData(url: String) -> Observable<Data> {
         
