@@ -50,11 +50,11 @@ struct APIManagerImpl: APIManager {
             .map { data -> [User] in
 
                 guard let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String : Any] else {
-                    throw(NetworkDataError.InvalidJSON)
+                    throw(DataError.InvalidJSON)
                 }
                 
                 guard let results = json["results"] as? [Any] else {
-                    throw(NetworkDataError.NoUsersData)
+                    throw(DataError.NoUsersData)
                 }
                 
                 let users = try [User].decode(results)

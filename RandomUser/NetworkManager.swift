@@ -34,7 +34,7 @@ struct NetworkManagerImpl: NetworkManager {
                 if error != nil {
                     observer.onError(error!)
                 } else if data == nil {
-                    observer.onError(NetworkDataError.NoData)
+                    observer.onError(DataError.NoData)
                 } else {
                     observer.onNext(data!)
                 }
