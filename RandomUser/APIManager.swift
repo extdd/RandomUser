@@ -46,7 +46,7 @@ class APIManagerImpl: APIManager {
 
     func loadUsers() -> Observable<[User]> {
         
-        return networkManager.loadData(url: config.urlWithParams)
+        return networkManager.loadData(url: config.fullURL)
             .map { data -> [User] in
 
                 guard let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String : Any] else {
