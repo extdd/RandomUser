@@ -127,9 +127,9 @@ class APIManagerImpl: APIManager {
 
         // appending unique number if username exists in Realm database
         while usernameExists(username, in: users) {
-            username.addNumber()
+            TextFormatter.appendNumber(to: &username)
         }
-        
+
         return username
         
     }

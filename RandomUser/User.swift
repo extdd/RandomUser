@@ -68,7 +68,7 @@ final class User: UserBase {
         self.firstName = firstName.capitalized
         self.lastName = lastName.capitalized
         self.email = email
-        self.phone = phone?.formatted(to: .phone)
+        self.phone = TextFormatter.format(phone, to: .phone)
         self.pictureURL = pictureURL
         self.thumbnailURL = thumbnailURL
         

@@ -65,7 +65,7 @@ class DetailViewModelImpl: DetailViewModel {
             .filterNil()
             .map {
                 // check is empty or valid
-                $0.characters.count == 0 || $0.checkFormat(for: .email)
+                $0.characters.count == 0 || TextFormatter.checkFormat(of: $0, for: .email)
             }.distinctUntilChanged()
             .shareReplay(1)
     }()
