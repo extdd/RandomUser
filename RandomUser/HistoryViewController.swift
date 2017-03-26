@@ -19,6 +19,7 @@ class HistoryViewController: UIViewController {
     
     fileprivate let disposeBag = DisposeBag()
     fileprivate let tableView = UITableView(frame: .zero, style: .plain)
+    fileprivate var didSetupConstraints: Bool = false
     
     // MARK: - INIT
     
@@ -53,7 +54,7 @@ class HistoryViewController: UIViewController {
         
         initNavigationBar()
         initTableView()
-        setConstraints()
+        self.view.setNeedsUpdateConstraints()
         
     }
     
@@ -91,12 +92,23 @@ class HistoryViewController: UIViewController {
     
     // MARK: - CONSTRAINTS
     
-    func setConstraints() {
+    override func updateViewConstraints() {
+
+        setupConstraints()
+        super.updateViewConstraints()
+        
+    }
+    
+    fileprivate func setupConstraints() {
+        
+        guard !didSetupConstraints else { return }
         
         tableView.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)
             make.bottom.left.right.equalTo(view)
         }
+        
+        didSetupConstraints = true
         
     }
     

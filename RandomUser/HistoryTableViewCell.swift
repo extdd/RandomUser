@@ -17,8 +17,13 @@ class HistoryTableViewCell: UITableViewCell {
     let genderLabel = UILabel.create(type: .symbol)
     
     fileprivate let dateBar = UIView(frame: .zero)
-    fileprivate let content = UIView(frame: .zero)
-
+    fileprivate let labelsContainer = UIView(frame: .zero)
+    fileprivate var didSetupConstraints: Bool = false
+    
+    override class var requiresConstraintBasedLayout: Bool {
+        return true
+    }
+    
     // MARK: - INIT
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
@@ -41,30 +46,45 @@ class HistoryTableViewCell: UITableViewCell {
         
         dateBar.backgroundColor = CustomColor.gray
         dateBar.addSubview(dateLabel)
-        content.addSubviews([nameLabel, detailLabel, genderLabel])
-        self.addSubviews([dateBar, content])
-        setConstraints()
+        labelsContainer.addSubviews([nameLabel, detailLabel, genderLabel])
+        self.contentView.addSubviews([dateBar, labelsContainer])
+        self.layoutIfNeeded()
         
     }
     
+    
+    //
     // MARK: - CONSTRAINTS
     
-    func setConstraints() {
+    override func updateConstraints() {
+        
+        setupConstraints()
+        super.updateConstraints()
+        
+    }
+    
+    fileprivate func setupConstraints() {
+        
+        guard !didSetupConstraints else { return }
         
         // date
         dateBar.snp.makeConstraints { make in
-            make.top.left.right.equalTo(self)
+            make.top.left.right.equalToSuperview()
         }
         dateLabel.snp.makeConstraints { make in
-            make.left.equalTo(snp.left).offset(Layout.margin)
-            make.top.equalTo(dateBar).offset(Layout.marginExtraSmall)
-            make.bottom.equalTo(dateBar).inset(Layout.marginExtraSmall)
+            make.top.equalToSuperview().offset(Layout.marginExtraSmall)
+            make.left.right.equalToSuperview().inset(Layout.margin)
+            make.bottom.equalToSuperview().inset(Layout.marginExtraSmall)
         }
         
-        // content
-        content.snp.makeConstraints { make in
+        // labels
+        labelsContainer.snp.makeConstraints { make in
             make.top.equalTo(dateBar.snp.bottom)
             make.left.right.bottom.equalToSuperview()
+        }
+        genderLabel.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.right.equalTo(contentView).offset(-Layout.margin)
         }
         nameLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(Layout.marginSmall)
@@ -74,13 +94,20 @@ class HistoryTableViewCell: UITableViewCell {
         detailLabel.snp.makeConstraints { make in
             make.top.equalTo(nameLabel.snp.bottom).offset(Layout.marginExtraSmall)
             make.left.equalTo(nameLabel)
-            make.right.equalTo(nameLabel)
-            make.bottom.equalToSuperview().inset(Layout.marginSmall)
+            make.right.lessThanOrEqualTo(genderLabel.snp.left).offset(-Layout.marginSmall)
+            make.bottom.equalTo(labelsContainer).inset(Layout.marginSmall)
         }
-        genderLabel.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.right.equalTo(self).offset(-Layout.margin)
+        
+        // contentView
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
+        
+        // compression ressistance
+        nameLabel.setContentCompressionResistancePriority(UILayoutPriorityDefaultLow, for: .horizontal)
+        detailLabel.setContentCompressionResistancePriority(UILayoutPriorityDefaultLow, for: .horizontal)
+        
+        didSetupConstraints = true
         
     }
     

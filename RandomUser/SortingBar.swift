@@ -16,7 +16,12 @@ class SortingBar: UIView {
     
     fileprivate let body = UIView(frame: .zero)
     fileprivate let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+    fileprivate var didSetupConstraints: Bool = false
     
+    override class var requiresConstraintBasedLayout: Bool {
+        return true
+    }
+
     // MARK: - INIT
     
     init(frame: CGRect, withItems items: [String]?) {
@@ -28,11 +33,10 @@ class SortingBar: UIView {
         segmentedControl.tintColor = .white
         
         super.init(frame: frame)
-        
+
         body.addSubview(blurView)
         self.addSubview(body)
         self.addSubview(segmentedControl)
-        setConstraints()
         
     }
     
@@ -43,9 +47,18 @@ class SortingBar: UIView {
     }
     
     // MARK: - CONSTRAINTS
-    
-    func setConstraints() {
+
+    override func updateConstraints() {
+
+        setupConstraints()
+        super.updateConstraints()
         
+    }
+
+    fileprivate func setupConstraints() {
+        
+        guard !didSetupConstraints else { return }
+
         segmentedControl.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(Layout.marginMedium)
             make.bottom.equalToSuperview().inset(Layout.marginMedium)
@@ -57,6 +70,8 @@ class SortingBar: UIView {
         blurView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        
+        didSetupConstraints = true
         
     }
     

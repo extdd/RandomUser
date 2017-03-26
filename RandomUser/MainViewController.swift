@@ -25,6 +25,7 @@ class MainViewController: UIViewController {
     fileprivate var refreshButton: UIBarButtonItem?
     fileprivate var addButton: UIBarButtonItem?
     fileprivate var userDefaultThumbnail: UIImage? = UIImage(named: CustomImage.userDefaultThumbnailName)
+    fileprivate var didSetupConstraints: Bool = false
     
     // MARK: - INIT
     
@@ -55,11 +56,11 @@ class MainViewController: UIViewController {
     
     fileprivate func initUI(){
         
-        self.view.backgroundColor = .white
         initNavigationBar()
         initTableView()
-        setConstraints()
-
+        self.view.backgroundColor = .white
+        self.view.setNeedsUpdateConstraints()
+        
     }
     
     fileprivate func initNavigationBar() {
@@ -95,7 +96,7 @@ class MainViewController: UIViewController {
             return
         }
         
-        preloader = Preloader(info: info, snapToSuperview: true)
+        preloader = Preloader(info: info, snapsToSuperview: true)
         self.view.addSubview(preloader!)
         
     }
@@ -168,7 +169,16 @@ class MainViewController: UIViewController {
     
     // MARK: - CONSTRAINTS
     
-    func setConstraints() {
+    override func updateViewConstraints() {
+        
+        setupConstraints()
+        super.updateViewConstraints()
+        
+    }
+    
+    fileprivate func setupConstraints() {
+        
+        guard !didSetupConstraints else { return }
         
         sortingBar?.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)
@@ -178,6 +188,8 @@ class MainViewController: UIViewController {
             make.top.equalTo(topLayoutGuide.snp.bottom)
             make.bottom.left.right.equalTo(view)
         }
+        
+        didSetupConstraints = true
         
     }
 

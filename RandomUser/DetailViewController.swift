@@ -21,9 +21,14 @@ class DetailViewController: UIViewController {
     fileprivate let content: DetailViewContent = DetailViewContent()
     fileprivate let scrollViewContainer = UIView(frame: .zero)
     fileprivate let scrollView = UIScrollView(frame: .zero) // for auto scrolling content when the keyboard appears
+    fileprivate let sharedDisposeBag = DisposeBag() // shared for all display modes
+    
     fileprivate var editButton: UIBarButtonItem?
     fileprivate var saveButton: UIBarButtonItem?
     fileprivate var cancelButton: UIBarButtonItem?
+    fileprivate var disposeBag: DisposeBag! = DisposeBag()
+    fileprivate var didSetupConstraints: Bool = false
+    
     fileprivate var displayMode: DisplayMode! {
         didSet {
             updateUI(for: displayMode)
@@ -31,9 +36,6 @@ class DetailViewController: UIViewController {
         }
     }
     
-    fileprivate let sharedDisposeBag = DisposeBag() // shared for all display modes
-    fileprivate var disposeBag: DisposeBag! = DisposeBag()
-
     // MARK: - INIT
     
     init(viewModel: DetailViewModel, apiManager: APIManager) {
@@ -63,13 +65,14 @@ class DetailViewController: UIViewController {
     fileprivate func initUI(){
         
         initContent()
-        self.automaticallyAdjustsScrollViewInsets = false
-        self.view.backgroundColor = .white
         if self.presentingViewController != nil {
             displayMode = .add // view controller is presented (adding new user)
         } else {
             displayMode = .show // view controller is pushed (showing details)
         }
+        
+        self.automaticallyAdjustsScrollViewInsets = false
+        self.view.backgroundColor = .white
         
     }
     
@@ -77,10 +80,12 @@ class DetailViewController: UIViewController {
         
         updateNavigationBar(for: displayMode)
         guard let user = viewModel.activeUser else { return }
+        
         content.updateUI(for: displayMode, with: user)
         content.genderPickerView?.delegate = self
         content.genderPickerView?.dataSource = self
         content.genderPickerView?.selectRow(Gender.from(string: user.gender).hashValue, inComponent: 0, animated: false)
+        self.view.setNeedsUpdateConstraints()
         
     }
     
@@ -215,12 +220,12 @@ class DetailViewController: UIViewController {
         guard let gender = viewModel.gender.value else { return }
 
         apiManager.save(user: user,
-                         isNew: isNew,
-                         gender: gender,
-                         firstName: firstName,
-                         lastName: lastName,
-                         email: viewModel.email.value,
-                         phone: viewModel.phone.value)
+                        isNew: isNew,
+                        gender: gender,
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: viewModel.email.value,
+                        phone: viewModel.phone.value)
         
     }
     
@@ -276,7 +281,6 @@ class DetailViewController: UIViewController {
         scrollView.addSubview(content)
         scrollViewContainer.addSubview(scrollView)
         self.view.addSubview(scrollViewContainer)
-        setConstraints()
         
     }
 
@@ -285,13 +289,23 @@ class DetailViewController: UIViewController {
         // calculating real content size for proper scrolling when the keyboard appears
         var contentSize = self.content.realContentSize
         contentSize.height += Layout.margin
-        self.scrollView.contentSize = contentSize;
+        self.scrollView.contentSize = contentSize
         
     }
     
     // MARK: - CONSTRAINTS
     
-    fileprivate func setConstraints() {
+    override func updateViewConstraints() {
+    
+        setupConstraints()
+        content.updateConstraints(for: displayMode)
+        super.updateViewConstraints()
+        
+    }
+    
+    fileprivate func setupConstraints() {
+        
+        guard !didSetupConstraints else { return }
         
         scrollViewContainer.snp.makeConstraints { make in
             make.top.equalTo(topLayoutGuide.snp.bottom)
@@ -305,6 +319,8 @@ class DetailViewController: UIViewController {
             make.edges.equalTo(scrollView)
             make.size.equalTo(scrollViewContainer)
         }
+        
+        didSetupConstraints = true
         
     }
     

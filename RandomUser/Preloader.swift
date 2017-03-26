@@ -22,15 +22,20 @@ class Preloader: UIView {
     fileprivate let indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
     fileprivate var label: UILabel?
     fileprivate var info: PreloaderInfo?
-    fileprivate var snapToSuperview: Bool = false
+    fileprivate var snapsToSuperview: Bool = false
+    fileprivate var didSetupConstraints: Bool = false
+    
+    override class var requiresConstraintBasedLayout: Bool {
+        return true
+    }
     
     // MARK: - INIT
     
-    convenience init(info: PreloaderInfo? = nil, snapToSuperview: Bool = false) {
+    convenience init(info: PreloaderInfo? = nil, snapsToSuperview: Bool = false) {
         
         self.init(frame: .zero)
         self.info = info
-        self.snapToSuperview = snapToSuperview
+        self.snapsToSuperview = snapsToSuperview
         initUI()
         
     }
@@ -63,13 +68,20 @@ class Preloader: UIView {
             self.addSubview(label!)
         }
         
-        setConstraints()
+    }
+
+    // MARK: - CONSTRAINTS
+    
+    override func updateConstraints() {
+        
+        setupConstraints()
+        super.updateConstraints()
         
     }
     
-    // MARK: - CONSTRAINTS
-    
-    fileprivate func setConstraints() {
+    fileprivate func setupConstraints() {
+        
+        guard !didSetupConstraints else { return }
         
         body.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -82,17 +94,13 @@ class Preloader: UIView {
             make.top.equalTo(indicator.snp.bottom).offset(Layout.margin)
         }
         
-    }
-
-    // MARK: - EVENTS
-    
-    override func didMoveToSuperview() {
-        
-        guard superview != nil else { return }
-        guard snapToSuperview == true else { return }
-        self.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        if snapsToSuperview, superview != nil {
+            self.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
         }
+        
+        didSetupConstraints = true
         
     }
     
